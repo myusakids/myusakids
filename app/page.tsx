@@ -1,101 +1,154 @@
-import Image from "next/image";
+import { Suspense } from "react";
+import Link from "next/link";
+import { getCategories, getFeaturedListings, getTowns } from "@/lib/queries";
+import { getFeaturedEvents } from "@/lib/event-queries";
+import CategoryGrid from "@/components/CategoryGrid";
+import ListingCard from "@/components/ListingCard";
+import EventCardCompact from "@/components/EventCardCompact";
+import SearchBar from "@/components/SearchBar";
+import type { Metadata } from "next";
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: "MyConnecticutKids — Find things for kids in CT",
+  description:
+    "Camps, classes, sports programs, childcare, birthday party venues and things to do with kids in Connecticut.",
+};
+
+export const revalidate = 1800;
+
+export default async function HomePage() {
+  const [categories, featuredListings, towns, featuredEvents] = await Promise.all([
+    getCategories().catch(() => []),
+    getFeaturedListings(6).catch(() => []),
+    getTowns().catch(() => []),
+    getFeaturedEvents(3).catch(() => []),
+  ]);
+
+  const heroTowns = towns.slice(0, 6);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <>
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="bg-brand-green px-4 py-14 md:py-20">
+        <div className="max-w-2xl mx-auto text-center">
+          <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">
+            Find things for your kids in CT
+          </h1>
+          <p className="mt-3 text-brand-green-light text-base md:text-lg">
+            Camps, classes, events, childcare &amp; more near you
+          </p>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          <div className="mt-6">
+            <SearchBar className="max-w-xl mx-auto shadow-sm" />
+          </div>
+
+          {heroTowns.length > 0 && (
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {heroTowns.map((town) => (
+                <Link
+                  key={town.slug}
+                  href={`/search?town=${encodeURIComponent(town.name)}`}
+                  className="px-3 py-1.5 rounded-full text-sm text-white border border-white/40 hover:bg-white/20 transition-colors"
+                >
+                  {town.name}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* ── Category grid ─────────────────────────────────────────────────── */}
+      <section className="max-w-6xl mx-auto px-4 py-12">
+        <h2 className="text-xl font-medium text-gray-900 mb-5">Browse by category</h2>
+        <Suspense fallback={<CategoryGridSkeleton />}>
+          <CategoryGrid categories={categories} />
+        </Suspense>
+      </section>
+
+      {/* ── Featured listings ─────────────────────────────────────────────── */}
+      {featuredListings.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 pb-12">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xl font-medium text-gray-900">Featured near you</h2>
+            <Link
+              href="/search"
+              className="text-sm text-brand-green hover:text-brand-green-mid transition-colors"
+            >
+              View all →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {featuredListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Upcoming events ───────────────────────────────────────────────── */}
+      {featuredEvents.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 pb-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-medium text-gray-900">Upcoming events</h2>
+            <Link
+              href="/events"
+              className="text-sm text-brand-green hover:text-brand-green-mid transition-colors"
+            >
+              View full calendar →
+            </Link>
+          </div>
+          <div className="bg-white border border-gray-100 rounded-2xl px-4 divide-y divide-gray-50">
+            {featuredEvents.map((event) => (
+              <EventCardCompact key={event.id} event={event} />
+            ))}
+          </div>
+          <div className="mt-3 text-center">
+            <Link
+              href="/events"
+              className="inline-flex items-center gap-1.5 text-sm text-brand-green hover:text-brand-green-mid transition-colors"
+            >
+              📅 See all upcoming events →
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* ── CTA banner ────────────────────────────────────────────────────── */}
+      <section className="bg-brand-green-light border-y border-brand-green/20 px-4 py-10">
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="text-lg font-medium text-brand-green-dark">
+            Are you a Connecticut kids business?
+          </p>
+          <p className="text-brand-green-dark/70 mt-1 text-sm">
+            Add your listing — it&apos;s free and takes less than 5 minutes.
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/submit"
+              className="inline-block bg-brand-green text-white font-medium px-6 py-3 rounded-xl hover:bg-brand-green-mid transition-colors"
+            >
+              Add your listing →
+            </Link>
+            <Link
+              href="/events/submit"
+              className="inline-block bg-white border border-brand-green text-brand-green font-medium px-6 py-3 rounded-xl hover:bg-brand-green-light transition-colors"
+            >
+              Submit an event →
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function CategoryGridSkeleton() {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="h-24 bg-gray-100 rounded-xl animate-pulse" />
+      ))}
     </div>
   );
 }

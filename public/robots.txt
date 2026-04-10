@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /coming-soon
+
+# Host
+Host: https://myconnecticutkids.com
+
+# Sitemaps
+Sitemap: https://myconnecticutkids.com/sitemap.xml
