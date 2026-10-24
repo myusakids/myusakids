@@ -79,4 +79,4 @@ export const config = {
 // Pin to Edge runtime — Vercel started defaulting new projects to Node.js
 // middleware, and the Node.js build output has an ESM/CJS mismatch that fails
 // with "Cannot use import statement outside a module".
-export const runtime = "edge";
+export const runtime = "experimental-edge";
