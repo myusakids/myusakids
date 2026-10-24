@@ -1,6 +1,27 @@
 import { supabase } from "./supabase";
+import { createSupabaseAdmin } from "./supabase-admin";
 import { getStateConfig } from "./state-context";
 import type { ListingCard, ListingWithDetails, Category, Town, Listing, ListingImage, ListingHours } from "./types";
+
+/**
+ * Paginate past Supabase's project-level db.max_rows cap (default 1000).
+ * Fetches 1000-row pages until the current page is short — total rows
+ * for state-scoped tables (6k+ NY towns) land in a handful of round trips.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchAllPages<T>(buildQuery: () => any, pageSize = 1000): Promise<T[]> {
+  const out: T[] = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await buildQuery().range(from, from + pageSize - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    out.push(...(data as T[]));
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return out;
+}
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 
@@ -27,13 +48,13 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 
 export async function getTowns(): Promise<Town[]> {
   const { abbr } = getStateConfig();
-  const { data, error } = await supabase
-    .from("towns")
-    .select("*")
-    .eq("state", abbr)
-    .order("name");
-  if (error) throw error;
-  return data ?? [];
+  // Use the admin client so RLS doesn't apply, and paginate past the
+  // project-level db.max_rows cap (1000). Towns are public data.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createSupabaseAdmin() as any;
+  return fetchAllPages<Town>(() =>
+    admin.from("towns").select("*").eq("state", abbr).order("name")
+  );
 }
 
 // ─── Listings — card format ───────────────────────────────────────────────────
@@ -253,8 +274,12 @@ export async function getTownBySlug(slug: string): Promise<Town | null> {
 
 export async function getAllTownSlugs(): Promise<string[]> {
   const { abbr } = getStateConfig();
-  const { data } = await supabase.from("towns").select("slug").eq("state", abbr);
-  return (data ?? []).map((r: { slug: string }) => r.slug);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createSupabaseAdmin() as any;
+  const rows = await fetchAllPages<{ slug: string }>(() =>
+    admin.from("towns").select("slug").eq("state", abbr)
+  );
+  return rows.map((r) => r.slug);
 }
 
 /**
@@ -263,31 +288,37 @@ export async function getAllTownSlugs(): Promise<string[]> {
  */
 export async function getActiveTownSlugs(): Promise<string[]> {
   const { abbr } = getStateConfig();
-  const [{ data: towns }, { data: listings }] = await Promise.all([
-    supabase.from("towns").select("slug, name").eq("state", abbr),
-    supabase
-      .from("listings")
-      .select("town")
-      .eq("state", abbr)
-      .eq("status", "approved"),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createSupabaseAdmin() as any;
+  const [towns, listings] = await Promise.all([
+    fetchAllPages<{ slug: string; name: string }>(() =>
+      admin.from("towns").select("slug, name").eq("state", abbr)
+    ),
+    fetchAllPages<{ town: string }>(() =>
+      admin
+        .from("listings")
+        .select("town")
+        .eq("state", abbr)
+        .eq("status", "approved")
+    ),
   ]);
 
-  const activeTownNames = new Set(
-    (listings ?? []).map((l: { town: string }) => l.town)
-  );
-  return (towns ?? [])
-    .filter((t: { name: string }) => activeTownNames.has(t.name))
-    .map((t: { slug: string }) => t.slug);
+  const activeTownNames = new Set(listings.map((l) => l.town));
+  return towns.filter((t) => activeTownNames.has(t.name)).map((t) => t.slug);
 }
 
 export async function getAllApprovedListingSlugs(): Promise<string[]> {
   const { abbr } = getStateConfig();
-  const { data } = await supabase
-    .from("listings")
-    .select("slug")
-    .eq("status", "approved")
-    .eq("state", abbr);
-  return (data ?? []).map((r: { slug: string }) => r.slug);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createSupabaseAdmin() as any;
+  const rows = await fetchAllPages<{ slug: string }>(() =>
+    admin
+      .from("listings")
+      .select("slug")
+      .eq("status", "approved")
+      .eq("state", abbr)
+  );
+  return rows.map((r) => r.slug);
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

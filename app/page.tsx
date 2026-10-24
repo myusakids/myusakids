@@ -14,7 +14,8 @@ import type { Metadata } from "next";
 export async function generateMetadata(): Promise<Metadata> {
   const { siteName, abbr, name } = getStateConfig();
   return {
-    title: `${siteName} — Find things for kids in ${abbr}`,
+    // Root route uses absolute to override the layout's "%s | ${siteName}" template.
+    title: { absolute: `${siteName} — Find things for kids in ${abbr}` },
     description: `Camps, classes, sports programs, childcare, birthday party venues and things to do with kids in ${name}.`,
   };
 }
@@ -27,7 +28,7 @@ export default async function HomePage() {
     getCategories().catch(() => []),
     getFeaturedListings(6).catch(() => []),
     getTowns().catch(() => []),
-    getFeaturedEvents(3).catch(() => []),
+    getFeaturedEvents(abbr, 3).catch(() => []),
     getActiveAdMap(),
   ]);
 

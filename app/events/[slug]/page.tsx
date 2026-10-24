@@ -16,15 +16,15 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const event = await getEventBySlug(params.slug);
+  const { abbr } = getStateConfig();
+  const event = await getEventBySlug(params.slug, abbr);
   if (!event) return {};
-  const { siteName } = getStateConfig();
   const desc = event.description?.slice(0, 160) ?? "";
   return {
     title: `${event.title} — ${formatEventDate(event.start_date)}`,
     description: desc,
     openGraph: {
-      title: `${event.title} | ${siteName}`,
+      title: event.title,
       description: desc,
     },
   };
@@ -33,10 +33,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export const revalidate = 1800;
 
 export default async function EventDetailPage({ params }: Props) {
-  const event = await getEventBySlug(params.slug);
+  const { abbr } = getStateConfig();
+  const event = await getEventBySlug(params.slug, abbr);
   if (!event) notFound();
 
-  const nearbyEvents = await getNearbyEvents(event.town, event.slug, 3).catch(() => []);
+  const nearbyEvents = await getNearbyEvents(event.town, event.slug, abbr, 3).catch(() => []);
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     event.address ?? `${event.title} ${event.town} CT`

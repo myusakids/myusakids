@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getListingBySlug, getSimilarListings } from "@/lib/queries";
 import { getEventsForListing } from "@/lib/event-queries";
+import { getStateConfig } from "@/lib/state-context";
 import OpenClosedBadge from "@/components/OpenClosedBadge";
 import ListingCard from "@/components/ListingCard";
 import EventCardCompact from "@/components/EventCardCompact";
@@ -20,12 +21,13 @@ const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const listing = await getListingBySlug(params.slug);
   if (!listing) return {};
+  const { abbr } = getStateConfig();
 
   return {
-    title: `${listing.name} — ${listing.town}, CT`,
+    title: `${listing.name} — ${listing.town}, ${abbr}`,
     description: listing.short_desc ?? listing.description?.slice(0, 160) ?? "",
     openGraph: {
-      title: `${listing.name} — ${listing.town}, CT`,
+      title: `${listing.name} — ${listing.town}, ${abbr}`,
       description: listing.short_desc ?? "",
       images: listing.primary_image ? [{ url: listing.primary_image.url }] : [],
     },
@@ -37,19 +39,20 @@ export const revalidate = 3600;
 export default async function ListingPage({ params }: Props) {
   const listing = await getListingBySlug(params.slug);
   if (!listing) notFound();
+  const { abbr } = getStateConfig();
 
   const primaryCat = listing.categories[0];
   const [similarListings, upcomingEvents] = await Promise.all([
     primaryCat
       ? getSimilarListings(primaryCat.slug, listing.town, listing.slug).catch(() => [])
       : Promise.resolve([]),
-    getEventsForListing(listing.id, 2).catch(() => []),
+    getEventsForListing(listing.id, abbr, 2).catch(() => []),
   ]);
 
   const { facebook, instagram, clean: cleanDescription } = extractSocials(listing.description);
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    listing.address ?? `${listing.name} ${listing.town} CT`
+    listing.address ?? `${listing.name} ${listing.town} ${abbr}`
   )}`;
 
   // JSON-LD structured data
@@ -63,7 +66,7 @@ export default async function ListingPage({ params }: Props) {
           "@type": "PostalAddress",
           streetAddress: listing.address,
           addressLocality: listing.town,
-          addressRegion: "CT",
+          addressRegion: abbr,
           addressCountry: "US",
         }
       : undefined,
@@ -122,7 +125,7 @@ export default async function ListingPage({ params }: Props) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            {listing.town}, CT
+            {listing.town}, {abbr}
           </p>
         </div>
 

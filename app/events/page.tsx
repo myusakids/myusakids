@@ -34,18 +34,21 @@ export default async function EventsPage({ searchParams }: Props) {
     }
   }
 
+  const { name: stateName, abbr: stateAbbr } = getStateConfig();
+
   const [monthEvents, towns] = await Promise.all([
-    getEventsByMonth(year, month).catch(() => []),
+    getEventsByMonth(year, month, stateAbbr).catch(() => []),
     getTowns().catch(() => []),
   ]);
 
   // For list view: all upcoming events (from today forward)
-  const upcomingEvents = await getEvents({
-    town: searchParams.town,
-    startDate: today,
-  }).catch(() => []);
-
-  const { name: stateName } = getStateConfig();
+  const upcomingEvents = await getEvents(
+    {
+      town: searchParams.town,
+      startDate: today,
+    },
+    stateAbbr
+  ).catch(() => []);
 
   return (
     <Suspense fallback={null}>
@@ -59,6 +62,7 @@ export default async function EventsPage({ searchParams }: Props) {
         initialTown={searchParams.town}
         initialCat={searchParams.cat}
         stateName={stateName}
+        stateAbbr={stateAbbr}
       />
     </Suspense>
   );

@@ -4,9 +4,9 @@ import { getTowns } from "@/lib/queries";
 import { getStateConfig } from "@/lib/state-context";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { name, siteName } = getStateConfig();
+  const { name } = getStateConfig();
   return {
-    title: `${name} Towns | ${siteName}`,
+    title: `${name} Towns`,
     description: `Browse kids activities by ${name} town. Find family-friendly classes, camps, and events across ${name}.`,
   };
 }

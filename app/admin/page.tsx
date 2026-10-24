@@ -4,10 +4,7 @@ import type { Metadata } from "next";
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { getStateConfig } from "@/lib/state-context";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const { siteName } = getStateConfig();
-  return { title: `Admin — ${siteName}` };
-}
+export const metadata: Metadata = { title: "Admin" };
 
 export default async function AdminPage() {
   const supabase = createSupabaseServer();

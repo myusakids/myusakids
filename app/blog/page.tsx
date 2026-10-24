@@ -7,7 +7,7 @@ import { getStateConfig } from "@/lib/state-context";
 export async function generateMetadata(): Promise<Metadata> {
   const { name, siteName } = getStateConfig();
   return {
-    title: `Blog | ${siteName}`,
+    title: "Blog",
     description: `Tips, guides, and ideas for ${name} families — camps, activities, birthday ideas, seasonal fun, and more.`,
     openGraph: {
       title: `${siteName} Blog`,

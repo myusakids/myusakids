@@ -31,6 +31,7 @@ interface Props {
   initialTown?: string;
   initialCat?: string;
   stateName: string;
+  stateAbbr: string;
 }
 
 export default function EventsPageClient({
@@ -43,6 +44,7 @@ export default function EventsPageClient({
   initialTown,
   initialCat,
   stateName,
+  stateAbbr,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -109,11 +111,14 @@ export default function EventsPageClient({
       setSelectedDate(null);
       try {
         const [newMonthEvents, newUpcoming] = await Promise.all([
-          getEventsByMonth(newYear, newMonth),
-          getEvents({
-            town: selectedTown || undefined,
-            startDate: todayISO(),
-          }),
+          getEventsByMonth(newYear, newMonth, stateAbbr),
+          getEvents(
+            {
+              town: selectedTown || undefined,
+              startDate: todayISO(),
+            },
+            stateAbbr
+          ),
         ]);
         setYear(newYear);
         setMonth(newMonth);
@@ -127,7 +132,7 @@ export default function EventsPageClient({
         setLoading(false);
       }
     },
-    [selectedTown, searchParams, router]
+    [selectedTown, searchParams, router, stateAbbr]
   );
 
   function prevMonth() {
@@ -144,10 +149,13 @@ export default function EventsPageClient({
     setSelectedTown(town);
     setLoading(true);
     try {
-      const newUpcoming = await getEvents({
-        town: town || undefined,
-        startDate: todayISO(),
-      });
+      const newUpcoming = await getEvents(
+        {
+          town: town || undefined,
+          startDate: todayISO(),
+        },
+        stateAbbr
+      );
       setUpcomingEvents(newUpcoming);
       const params = new URLSearchParams(searchParams.toString());
       if (town) params.set("town", town);

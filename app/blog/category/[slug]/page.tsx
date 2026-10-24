@@ -12,9 +12,9 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const cat = await getBlogCategoryBySlug(params.slug);
   if (!cat) return {};
-  const { name, siteName } = getStateConfig();
+  const { name } = getStateConfig();
   return {
-    title: `${cat.name} | ${siteName} Blog`,
+    title: `${cat.name} — Blog`,
     description: `Read our ${cat.name.toLowerCase()} guides and tips for ${name} families.`,
     alternates: { canonical: `/blog/category/${cat.slug}` },
   };

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getPostBySlug, getAllPublishedPostSlugs, getPublishedPosts } from "@/lib/blog-queries";
+import { getPostBySlug, getPublishedPosts } from "@/lib/blog-queries";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { getStateConfig } from "@/lib/state-context";
 import AdSlot from "@/components/AdSlot";
@@ -11,17 +11,17 @@ interface Props {
   params: { slug: string };
 }
 
-export async function generateStaticParams() {
-  const slugs = await getAllPublishedPostSlugs();
-  return slugs.map((slug) => ({ slug }));
+// Multi-tenant: blog post slugs are per-state; skip pre-rendering and
+// let each host render on-demand (cached via `revalidate`).
+export function generateStaticParams() {
+  return [];
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPostBySlug(params.slug);
   if (!post) return {};
-  const { siteName } = getStateConfig();
   return {
-    title: post.meta_title ?? `${post.title} | ${siteName}`,
+    title: post.meta_title ?? post.title,
     description: post.meta_description ?? post.excerpt ?? "",
     openGraph: {
       title: post.meta_title ?? post.title,

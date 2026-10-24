@@ -1,6 +1,11 @@
 import { supabase } from "./supabase";
-import { getStateConfig } from "./state-context";
 import type { EventCard, EventWithDetails, Event, Category, Listing } from "./types";
+
+// This module is imported by both server components and the client-side
+// EventsPageClient (for month/town navigation refetches). It MUST NOT import
+// anything from next/headers transitively — callers pass stateAbbr in. Server
+// callers resolve it with getStateConfig() from state-context; client callers
+// receive it as a prop from a server parent.
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -36,9 +41,9 @@ const EVENT_CARD_SELECT = `
 
 export async function getEventsByMonth(
   year: number,
-  month: number
+  month: number,
+  stateAbbr: string
 ): Promise<EventCard[]> {
-  const { abbr } = getStateConfig();
   const startOfMonth = `${year}-${String(month).padStart(2, "0")}-01`;
   // Last day: day 0 of next month = last day of this month
   const lastDay = new Date(year, month, 0).getDate();
@@ -48,7 +53,7 @@ export async function getEventsByMonth(
     .from("events")
     .select(EVENT_CARD_SELECT)
     .eq("status", "approved")
-    .eq("state", abbr)
+    .eq("state", stateAbbr)
     .gte("start_date", startOfMonth)
     .lte("start_date", endOfMonth)
     .order("start_date")
@@ -58,20 +63,22 @@ export async function getEventsByMonth(
   return normalizeEventCards(data ?? []);
 }
 
-export async function getEvents(filters: {
-  town?: string;
-  categorySlug?: string;
-  isFree?: boolean;
-  startDate?: string;
-  endDate?: string;
-  thisWeek?: boolean;
-} = {}): Promise<EventCard[]> {
-  const { abbr } = getStateConfig();
+export async function getEvents(
+  filters: {
+    town?: string;
+    categorySlug?: string;
+    isFree?: boolean;
+    startDate?: string;
+    endDate?: string;
+    thisWeek?: boolean;
+  },
+  stateAbbr: string
+): Promise<EventCard[]> {
   let query = supabase
     .from("events")
     .select(EVENT_CARD_SELECT)
     .eq("status", "approved")
-    .eq("state", abbr);
+    .eq("state", stateAbbr);
 
   if (filters.town) query = query.eq("town", filters.town);
   if (filters.isFree) query = query.eq("is_free", true);
@@ -106,8 +113,10 @@ export async function getEvents(filters: {
   return results;
 }
 
-export async function getEventBySlug(slug: string): Promise<EventWithDetails | null> {
-  const { abbr } = getStateConfig();
+export async function getEventBySlug(
+  slug: string,
+  stateAbbr: string
+): Promise<EventWithDetails | null> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase as any)
     .from("events")
@@ -118,7 +127,7 @@ export async function getEventBySlug(slug: string): Promise<EventWithDetails | n
     `)
     .eq("slug", slug)
     .eq("status", "approved")
-    .eq("state", abbr)
+    .eq("state", stateAbbr)
     .single() as { data: Record<string, unknown> | null; error: unknown };
 
   if (error || !data) return null;
@@ -141,16 +150,16 @@ export async function getEventBySlug(slug: string): Promise<EventWithDetails | n
 
 export async function getEventsForListing(
   listingId: string,
+  stateAbbr: string,
   limit = 2
 ): Promise<EventCard[]> {
-  const { abbr } = getStateConfig();
   const today = new Date().toISOString().slice(0, 10);
 
   const { data, error } = await supabase
     .from("events")
     .select(EVENT_CARD_SELECT)
     .eq("status", "approved")
-    .eq("state", abbr)
+    .eq("state", stateAbbr)
     .eq("listing_id", listingId)
     .gte("start_date", today)
     .order("start_date")
@@ -160,15 +169,17 @@ export async function getEventsForListing(
   return normalizeEventCards(data ?? []);
 }
 
-export async function getFeaturedEvents(limit = 3): Promise<EventCard[]> {
-  const { abbr } = getStateConfig();
+export async function getFeaturedEvents(
+  stateAbbr: string,
+  limit = 3
+): Promise<EventCard[]> {
   const today = new Date().toISOString().slice(0, 10);
 
   const { data, error } = await supabase
     .from("events")
     .select(EVENT_CARD_SELECT)
     .eq("status", "approved")
-    .eq("state", abbr)
+    .eq("state", stateAbbr)
     .eq("is_featured", true)
     .gte("start_date", today)
     .order("start_date")
@@ -181,16 +192,16 @@ export async function getFeaturedEvents(limit = 3): Promise<EventCard[]> {
 export async function getNearbyEvents(
   town: string,
   excludeSlug: string,
+  stateAbbr: string,
   limit = 3
 ): Promise<EventCard[]> {
-  const { abbr } = getStateConfig();
   const today = new Date().toISOString().slice(0, 10);
 
   const { data, error } = await supabase
     .from("events")
     .select(EVENT_CARD_SELECT)
     .eq("status", "approved")
-    .eq("state", abbr)
+    .eq("state", stateAbbr)
     .eq("town", town)
     .gte("start_date", today)
     .neq("slug", excludeSlug)

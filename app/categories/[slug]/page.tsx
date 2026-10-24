@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${category.name} in ${name}`,
     description: `Find ${category.name.toLowerCase()} for kids in ${name}. Browse listings by town on ${siteName}.`,
     openGraph: {
-      title: `${category.name} in ${name} | ${siteName}`,
+      title: `${category.name} in ${name}`,
       description: `Find ${category.name.toLowerCase()} for kids in ${name}.`,
     },
   };

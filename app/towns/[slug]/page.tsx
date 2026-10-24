@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import {
   getTownBySlug,
   getListingsByTown,
-  getAllTownSlugs,
   getCategories,
   LISTINGS_PER_PAGE,
 } from "@/lib/queries";
@@ -21,21 +20,23 @@ interface Props {
   searchParams: { page?: string };
 }
 
-export async function generateStaticParams() {
-  const slugs = await getAllTownSlugs();
-  return slugs.map((slug) => ({ slug }));
+// Multi-tenant: town slugs are per-state and we can't know the host at
+// build time, so skip pre-rendering. Pages are rendered on-demand per host
+// and cached via `revalidate` below.
+export function generateStaticParams() {
+  return [];
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const town = await getTownBySlug(params.slug);
   if (!town) return {};
-  const { abbr, name, siteName } = getStateConfig();
+  const { abbr, name } = getStateConfig();
   // Skip indexing towns with no approved listings — avoids thin-content
   // SEO penalty on the long tail of GNIS-sourced hamlets.
   const { total } = await getListingsByTown(town.name, 1, 1).catch(() => ({ total: 0 }));
   const robots = total === 0 ? { index: false, follow: true } : undefined;
   return {
-    title: `Kids Activities in ${town.name}, ${abbr} | ${siteName}`,
+    title: `Kids Activities in ${town.name}, ${abbr}`,
     description: `Find the best kids activities, classes, camps, and events in ${town.name}, ${name}. Discover family-friendly businesses near you.`,
     openGraph: {
       title: `Kids Activities in ${town.name}, ${abbr}`,
@@ -54,12 +55,13 @@ export default async function TownPage({ params, searchParams }: Props) {
   const town = await getTownBySlug(params.slug);
   if (!town) notFound();
 
+  const { abbr: stateAbbr, name: stateName } = getStateConfig();
   const page = Math.max(1, parseInt(searchParams.page ?? "1", 10) || 1);
 
   const [{ items: listings, total }, categories, upcomingEvents, adMap] = await Promise.all([
     getListingsByTown(town.name, page),
     getCategories(),
-    getNearbyEvents(town.name, "", 6).catch(() => []),
+    getNearbyEvents(town.name, "", stateAbbr, 6).catch(() => []),
     getActiveAdMap(),
   ]);
 
@@ -72,8 +74,6 @@ export default async function TownPage({ params, searchParams }: Props) {
       categoryCounts[cat.slug] = (categoryCounts[cat.slug] ?? 0) + 1;
     }
   }
-
-  const { abbr: stateAbbr, name: stateName } = getStateConfig();
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
