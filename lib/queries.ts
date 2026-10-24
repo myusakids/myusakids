@@ -257,6 +257,29 @@ export async function getAllTownSlugs(): Promise<string[]> {
   return (data ?? []).map((r: { slug: string }) => r.slug);
 }
 
+/**
+ * Towns with at least one approved listing in the current state.
+ * Used by sitemap/listing generation to avoid thin content pages.
+ */
+export async function getActiveTownSlugs(): Promise<string[]> {
+  const { abbr } = getStateConfig();
+  const [{ data: towns }, { data: listings }] = await Promise.all([
+    supabase.from("towns").select("slug, name").eq("state", abbr),
+    supabase
+      .from("listings")
+      .select("town")
+      .eq("state", abbr)
+      .eq("status", "approved"),
+  ]);
+
+  const activeTownNames = new Set(
+    (listings ?? []).map((l: { town: string }) => l.town)
+  );
+  return (towns ?? [])
+    .filter((t: { name: string }) => activeTownNames.has(t.name))
+    .map((t: { slug: string }) => t.slug);
+}
+
 export async function getAllApprovedListingSlugs(): Promise<string[]> {
   const { abbr } = getStateConfig();
   const { data } = await supabase

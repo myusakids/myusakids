@@ -30,6 +30,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const town = await getTownBySlug(params.slug);
   if (!town) return {};
   const { abbr, name, siteName } = getStateConfig();
+  // Skip indexing towns with no approved listings — avoids thin-content
+  // SEO penalty on the long tail of GNIS-sourced hamlets.
+  const { total } = await getListingsByTown(town.name, 1, 1).catch(() => ({ total: 0 }));
+  const robots = total === 0 ? { index: false, follow: true } : undefined;
   return {
     title: `Kids Activities in ${town.name}, ${abbr} | ${siteName}`,
     description: `Find the best kids activities, classes, camps, and events in ${town.name}, ${name}. Discover family-friendly businesses near you.`,
@@ -40,6 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical: `/towns/${town.slug}`,
     },
+    robots,
   };
 }
 

@@ -14,6 +14,13 @@ const STATES: Record<string, StateConfig> = {
     domain: "myconnecticutkids.com",
     siteName: "MyConnecticutKids",
   },
+  ny: {
+    slug: "ny",
+    abbr: "NY",
+    name: "New York",
+    domain: "mynewyorkkids.com",
+    siteName: "MyNewYorkKids",
+  },
 };
 
 const BY_HOST: Record<string, StateConfig> = Object.fromEntries(

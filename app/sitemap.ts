@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAllApprovedListingSlugs, getAllTownSlugs, getCategories } from "@/lib/queries";
+import { getAllApprovedListingSlugs, getActiveTownSlugs, getCategories } from "@/lib/queries";
 import { getAllPublishedPostSlugs, getBlogCategories } from "@/lib/blog-queries";
 import { getStateConfig } from "@/lib/state-context";
 
@@ -8,7 +8,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const BASE = `https://${domain}`;
   const [listingSlugs, townSlugs, categories, postSlugs, blogCategories] = await Promise.all([
     getAllApprovedListingSlugs().catch(() => [] as string[]),
-    getAllTownSlugs().catch(() => [] as string[]),
+    // Only towns with at least one approved listing — skip thin pages.
+    getActiveTownSlugs().catch(() => [] as string[]),
     getCategories().catch(() => []),
     getAllPublishedPostSlugs().catch(() => [] as string[]),
     getBlogCategories().catch(() => []),
