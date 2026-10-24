@@ -10,6 +10,7 @@ export interface Database {
           email: string;
           full_name: string | null;
           role: string;
+          admin_state: string | null;
           created_at: string;
         };
         Insert: {
@@ -17,6 +18,7 @@ export interface Database {
           email: string;
           full_name?: string | null;
           role?: string;
+          admin_state?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
@@ -40,6 +42,7 @@ export interface Database {
           status: string;
           is_featured: boolean;
           owner_id: string | null;
+          state: string;
           created_at: string;
           updated_at: string;
         };
@@ -72,6 +75,7 @@ export interface Database {
           recurrence_rule: string | null;
           status: string;
           is_featured: boolean;
+          state: string;
           created_at: string;
           updated_at: string;
         };
@@ -137,6 +141,7 @@ export interface Database {
           name: string;
           slug: string;
           county: string | null;
+          state: string;
         };
         Insert: Omit<Database["public"]["Tables"]["towns"]["Row"], "id"> & { id?: string };
         Update: Partial<Database["public"]["Tables"]["towns"]["Insert"]>;
@@ -148,6 +153,7 @@ export interface Database {
           listing_id: string | null;
           event_id: string | null;
           session_id: string | null;
+          state: string;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["analytics_events"]["Row"], "id" | "created_at"> & {
@@ -169,6 +175,7 @@ export interface Database {
           status: string;
           author_name: string;
           published_at: string | null;
+          state: string;
           created_at: string;
           updated_at: string;
         };
@@ -202,6 +209,7 @@ export interface Database {
           ad_type: string;
           code: string | null;
           is_active: boolean;
+          state: string;
           updated_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["ad_slots"]["Row"], "id" | "updated_at"> & {
