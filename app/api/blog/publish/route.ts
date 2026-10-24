@@ -61,10 +61,7 @@ export async function POST(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createSupabaseAdmin() as any;
 
-  // Upsert post.
-  // Note: onConflict uses "slug" alone — a (state, slug) composite unique
-  // constraint should be added before launching a second state to avoid
-  // cross-state slug collisions overwriting posts.
+  // Upsert post keyed on (state, slug) composite — see migration 007.
   const { data: post, error: postErr } = await admin
     .from("blog_posts")
     .upsert(
@@ -81,7 +78,7 @@ export async function POST(req: NextRequest) {
         state: state.abbr,
         published_at: postStatus === "published" ? new Date().toISOString() : null,
       },
-      { onConflict: "slug" }
+      { onConflict: "state,slug" }
     )
     .select("id")
     .single();
