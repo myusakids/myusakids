@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { getStateConfig } from "@/lib/state-context";
 import type { Listing } from "@/lib/types";
 import ListingsAdminClient from "./ListingsAdminClient";
 
@@ -12,6 +13,7 @@ interface Props {
 
 export default async function AdminListingsPage({ searchParams }: Props) {
   const supabase = createSupabaseServer();
+  const { abbr } = getStateConfig();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/signin");
 
@@ -20,6 +22,7 @@ export default async function AdminListingsPage({ searchParams }: Props) {
   const { data } = await (supabase as any)
     .from("listings")
     .select("*, listing_categories(categories(name, slug, icon))")
+    .eq("state", abbr)
     .order("created_at", { ascending: false });
 
   const listings = (data ?? []) as (Listing & {

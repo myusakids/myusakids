@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
+import { getStateConfig } from "@/lib/state-context";
 
-export const metadata: Metadata = {
-  title: "Affiliate Disclosure & Advertising",
-  description:
-    "How MyConnecticutKids earns money — affiliate links, display advertising, and sponsored placements.",
-  alternates: { canonical: "/affiliate-disclosure" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName } = getStateConfig();
+  return {
+    title: "Affiliate Disclosure & Advertising",
+    description: `How ${siteName} earns money — affiliate links, display advertising, and sponsored placements.`,
+    alternates: { canonical: "/affiliate-disclosure" },
+  };
+}
 
 export default function AffiliateDisclosurePage() {
+  const { name, siteName } = getStateConfig();
   return (
     <article className="max-w-2xl mx-auto px-4 py-10 prose prose-sm">
       <h1 className="text-2xl font-bold text-gray-900">
@@ -15,7 +19,7 @@ export default function AffiliateDisclosurePage() {
       </h1>
 
       <p className="text-gray-700 mt-4">
-        MyConnecticutKids is a free resource for Connecticut families. To keep the
+        {siteName} is a free resource for {name} families. To keep the
         site running we use two forms of monetization: affiliate links and display
         advertising.
       </p>
@@ -24,7 +28,7 @@ export default function AffiliateDisclosurePage() {
         Amazon Associates
       </h2>
       <p className="text-gray-700">
-        As an Amazon Associate, MyConnecticutKids earns from qualifying purchases.
+        As an Amazon Associate, {siteName} earns from qualifying purchases.
         When you click an Amazon link on this site and buy something, Amazon pays us
         a small commission at no extra cost to you.
       </p>

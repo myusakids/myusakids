@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { getStateConfig } from "@/lib/state-context";
 
 export async function POST(req: NextRequest) {
   // Verify admin session
@@ -24,6 +25,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 });
   }
 
+  const { name: stateName } = getStateConfig();
+
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -36,7 +39,7 @@ export async function POST(req: NextRequest) {
       max_tokens: 4000,
       messages: [{
         role: "user",
-        content: `List 5 real businesses offering ${category} in ${town}, Connecticut that are relevant for families with kids. Use your knowledge of real local businesses. Return ONLY a valid JSON array — no other text, no markdown, no explanation. Each object must include: name, address, phone, website, email, description (2 sentences, parent-friendly tone), age_min, age_max, cost_description, is_free (boolean), facebook_url, instagram_url, hours (array of 7 objects with day_of_week 0–6, opens_at "HH:MM", closes_at "HH:MM", is_closed boolean).`,
+        content: `List 5 real businesses offering ${category} in ${town}, ${stateName} that are relevant for families with kids. Use your knowledge of real local businesses. Return ONLY a valid JSON array — no other text, no markdown, no explanation. Each object must include: name, address, phone, website, email, description (2 sentences, parent-friendly tone), age_min, age_max, cost_description, is_free (boolean), facebook_url, instagram_url, hours (array of 7 objects with day_of_week 0–6, opens_at "HH:MM", closes_at "HH:MM", is_closed boolean).`,
       }],
     }),
   });

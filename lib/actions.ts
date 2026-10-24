@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServer } from "./supabase-server";
+import { getStateConfig } from "./state-context";
 import type { DayHours } from "@/components/HoursEditor";
 
 // Supabase typed client doesn't infer Insert/Update generics correctly with createServerClient;
@@ -25,6 +26,8 @@ async function notifyAdmin(subject: string, body: string) {
   const adminEmail = process.env.ADMIN_EMAIL;
   if (!apiKey || !adminEmail) return; // not configured — skip silently
 
+  const { siteName, domain } = getStateConfig();
+
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -32,12 +35,16 @@ async function notifyAdmin(subject: string, body: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "MyConnecticutKids <noreply@myconnecticutkids.com>",
+      from: `${siteName} <noreply@${domain}>`,
       to: [adminEmail],
       subject,
       text: body,
     }),
   });
+}
+
+function siteOrigin(domain: string): string {
+  return process.env.NEXT_PUBLIC_SITE_URL ?? `https://${domain}`;
 }
 
 // ─── Listing submission ───────────────────────────────────────────────────────
@@ -61,6 +68,7 @@ export async function submitListing(
   data: ListingSubmitData
 ): Promise<{ listingId: string | null; error: string | null; magicLinkSent: boolean }> {
   const supabase = createSupabaseServer() as AnySupabase;
+  const state = getStateConfig();
   const { data: { user } } = await supabase.auth.getUser();
 
   const slug = makeSlug(data.name);
@@ -84,6 +92,7 @@ export async function submitListing(
       status: "pending",
       is_featured: data.plan === "featured",
       owner_id: user?.id ?? null,
+      state: state.abbr,
     })
     .select("id")
     .single();
@@ -123,9 +132,10 @@ export async function submitListing(
   }
 
   // Notify admin
+  const origin = siteOrigin(state.domain);
   await notifyAdmin(
     `New listing submission: ${data.name}`,
-    `A new listing has been submitted for review.\n\nBusiness: ${data.name}\nTown: ${data.town}\nEmail: ${data.email}\nPlan: ${data.plan}\n\nReview it at: https://myconnecticutkids.com/admin/listings`
+    `A new listing has been submitted for review.\n\nBusiness: ${data.name}\nTown: ${data.town}\nEmail: ${data.email}\nPlan: ${data.plan}\n\nReview it at: ${origin}/admin/listings`
   );
 
   // If not logged in, send magic link so they can claim the listing
@@ -134,7 +144,7 @@ export async function submitListing(
     const { error: otpError } = await supabase.auth.signInWithOtp({
       email: data.email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://myconnecticutkids.com"}/auth/callback`,
+        emailRedirectTo: `${origin}/auth/callback`,
         shouldCreateUser: true,
       },
     });
@@ -171,16 +181,18 @@ export async function submitEvent(
   data: EventSubmitData
 ): Promise<{ eventId: string | null; error: string | null; magicLinkSent: boolean }> {
   const supabase = createSupabaseServer() as AnySupabase;
+  const state = getStateConfig();
   const { data: { user } } = await supabase.auth.getUser();
 
   const slug = makeSlug(data.title + "-" + data.start_date);
 
-  // Try to find linked listing by name
+  // Try to find linked listing by name within this state
   let listing_id: string | null = null;
   if (data.listing_name.trim()) {
     const { data: found } = await supabase
       .from("listings")
       .select("id")
+      .eq("state", state.abbr)
       .ilike("name", data.listing_name.trim())
       .limit(1)
       .single();
@@ -209,6 +221,7 @@ export async function submitEvent(
       status: "pending",
       is_featured: false,
       owner_id: user?.id ?? null,
+      state: state.abbr,
     })
     .select("id")
     .single();
@@ -232,9 +245,10 @@ export async function submitEvent(
     }
   }
 
+  const origin = siteOrigin(state.domain);
   await notifyAdmin(
     `New event submission: ${data.title}`,
-    `A new event has been submitted for review.\n\nEvent: ${data.title}\nDate: ${data.start_date}\nTown: ${data.town}\nEmail: ${data.email}\n\nReview it at: https://myconnecticutkids.com/admin/events`
+    `A new event has been submitted for review.\n\nEvent: ${data.title}\nDate: ${data.start_date}\nTown: ${data.town}\nEmail: ${data.email}\n\nReview it at: ${origin}/admin/events`
   );
 
   let magicLinkSent = false;
@@ -242,7 +256,7 @@ export async function submitEvent(
     const { error: otpError } = await supabase.auth.signInWithOtp({
       email: data.email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://myconnecticutkids.com"}/auth/callback`,
+        emailRedirectTo: `${origin}/auth/callback`,
         shouldCreateUser: true,
       },
     });
@@ -365,6 +379,7 @@ export async function saveOwnerEvent(
   eventId?: string
 ): Promise<{ error: string | null }> {
   const supabase = createSupabaseServer() as AnySupabase;
+  const { abbr } = getStateConfig();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
@@ -404,7 +419,7 @@ export async function saveOwnerEvent(
     const slug = makeSlug(data.title + "-" + data.start_date);
     const { data: event, error } = await supabase
       .from("events")
-      .insert({ ...payload, slug, is_featured: false, listing_id: null })
+      .insert({ ...payload, slug, is_featured: false, listing_id: null, state: abbr })
       .select("id")
       .single();
 

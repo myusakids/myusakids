@@ -69,7 +69,7 @@ export default function EventCard({ event }: Props) {
         </div>
 
         <p className="text-xs text-gray-500 mt-1">
-          📍 {event.town}, CT
+          📍 {event.town}
           {event.start_time && (
             <> · {formatTime(event.start_time)}</>
           )}

@@ -2,11 +2,16 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { getStateConfig } from "@/lib/state-context";
 
-export const metadata: Metadata = { title: "Admin — MyConnecticutKids" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName } = getStateConfig();
+  return { title: `Admin — ${siteName}` };
+}
 
 export default async function AdminPage() {
   const supabase = createSupabaseServer();
+  const { abbr } = getStateConfig();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/signin");
 
@@ -16,10 +21,10 @@ export default async function AdminPage() {
     { count: totalEvents },
     { count: pendingEvents },
   ] = await Promise.all([
-    supabase.from("listings").select("*", { count: "exact", head: true }),
-    supabase.from("listings").select("*", { count: "exact", head: true }).eq("status", "pending"),
-    supabase.from("events").select("*", { count: "exact", head: true }),
-    supabase.from("events").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("listings").select("*", { count: "exact", head: true }).eq("state", abbr),
+    supabase.from("listings").select("*", { count: "exact", head: true }).eq("state", abbr).eq("status", "pending"),
+    supabase.from("events").select("*", { count: "exact", head: true }).eq("state", abbr),
+    supabase.from("events").select("*", { count: "exact", head: true }).eq("state", abbr).eq("status", "pending"),
   ]);
 
   const stats = [

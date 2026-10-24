@@ -2,19 +2,24 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { getPublishedPosts, getBlogCategories } from "@/lib/blog-queries";
+import { getStateConfig } from "@/lib/state-context";
 
-export const metadata: Metadata = {
-  title: "Blog | MyConnecticutKids",
-  description: "Tips, guides, and ideas for Connecticut families — camps, activities, birthday ideas, seasonal fun, and more.",
-  openGraph: {
-    title: "MyConnecticutKids Blog",
-    description: "Family guides and activity ideas for Connecticut parents.",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { name, siteName } = getStateConfig();
+  return {
+    title: `Blog | ${siteName}`,
+    description: `Tips, guides, and ideas for ${name} families — camps, activities, birthday ideas, seasonal fun, and more.`,
+    openGraph: {
+      title: `${siteName} Blog`,
+      description: `Family guides and activity ideas for ${name} parents.`,
+    },
+  };
+}
 
 export const revalidate = 3600;
 
 export default async function BlogPage() {
+  const { name } = getStateConfig();
   const [posts, categories] = await Promise.all([
     getPublishedPosts(24),
     getBlogCategories(),
@@ -29,7 +34,7 @@ export default async function BlogPage() {
           Family Activity Blog
         </h1>
         <p className="text-gray-500 text-sm">
-          Tips, guides, and ideas for Connecticut families.
+          Tips, guides, and ideas for {name} families.
         </p>
       </div>
 

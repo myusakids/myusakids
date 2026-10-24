@@ -22,9 +22,10 @@ interface InitialData {
 interface Props {
   initialData?: InitialData;
   categories: BlogCategory[];
+  defaultAuthorName: string;
 }
 
-export default function BlogPostForm({ initialData, categories }: Props) {
+export default function BlogPostForm({ initialData, categories, defaultAuthorName }: Props) {
   const [isPending, startTransition] = useTransition();
   const [status, setStatus] = useState<string | null>(null);
 
@@ -36,7 +37,7 @@ export default function BlogPostForm({ initialData, categories }: Props) {
     meta_title: initialData?.meta_title ?? "",
     meta_description: initialData?.meta_description ?? "",
     featured_image: initialData?.featured_image ?? "",
-    author_name: initialData?.author_name ?? "MyConnecticutKids Team",
+    author_name: initialData?.author_name ?? defaultAuthorName,
     postStatus: initialData?.status ?? "draft",
     keywords: (initialData?.keywords ?? []).join(", "),
     categoryIds: initialData?.categoryIds ?? [],
@@ -138,7 +139,7 @@ export default function BlogPostForm({ initialData, categories }: Props) {
 
       <div>
         <label className={labelCls}>Keywords (comma-separated)</label>
-        <input className={inputCls} value={form.keywords} onChange={(e) => setForm((f) => ({ ...f, keywords: e.target.value }))} placeholder="kids camps, summer CT, ..." />
+        <input className={inputCls} value={form.keywords} onChange={(e) => setForm((f) => ({ ...f, keywords: e.target.value }))} placeholder="kids camps, summer, ..." />
       </div>
 
       <div>

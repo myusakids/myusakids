@@ -1,17 +1,20 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
+import { getStateConfig } from "@/lib/state-context";
 
 export const metadata: Metadata = { title: "Blog Admin" };
 
 export const dynamic = "force-dynamic";
 
 export default async function BlogAdminPage() {
+  const { abbr } = getStateConfig();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createSupabaseAdmin() as any;
   const { data: posts } = await admin
     .from("blog_posts")
     .select("id, title, slug, status, published_at, created_at")
+    .eq("state", abbr)
     .order("created_at", { ascending: false })
     .limit(50);
 

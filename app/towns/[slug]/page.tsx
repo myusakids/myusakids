@@ -10,6 +10,7 @@ import {
 } from "@/lib/queries";
 import { getNearbyEvents } from "@/lib/event-queries";
 import { getActiveAdMap } from "@/lib/ad-slot-queries";
+import { getStateConfig } from "@/lib/state-context";
 import ListingCard from "@/components/ListingCard";
 import EventCard from "@/components/EventCard";
 import AdSlot from "@/components/AdSlot";
@@ -28,12 +29,13 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const town = await getTownBySlug(params.slug);
   if (!town) return {};
+  const { abbr, name, siteName } = getStateConfig();
   return {
-    title: `Kids Activities in ${town.name}, CT | MyConnecticutKids`,
-    description: `Find the best kids activities, classes, camps, and events in ${town.name}, Connecticut. Discover family-friendly businesses near you.`,
+    title: `Kids Activities in ${town.name}, ${abbr} | ${siteName}`,
+    description: `Find the best kids activities, classes, camps, and events in ${town.name}, ${name}. Discover family-friendly businesses near you.`,
     openGraph: {
-      title: `Kids Activities in ${town.name}, CT`,
-      description: `Family-friendly activities and events in ${town.name}, CT.`,
+      title: `Kids Activities in ${town.name}, ${abbr}`,
+      description: `Family-friendly activities and events in ${town.name}, ${abbr}.`,
     },
     alternates: {
       canonical: `/towns/${town.slug}`,
@@ -66,11 +68,12 @@ export default async function TownPage({ params, searchParams }: Props) {
     }
   }
 
+  const { abbr: stateAbbr, name: stateName } = getStateConfig();
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: `Kids Activities in ${town.name}, CT`,
-    description: `Family-friendly activities and events in ${town.name}, Connecticut`,
+    name: `Kids Activities in ${town.name}, ${stateAbbr}`,
+    description: `Family-friendly activities and events in ${town.name}, ${stateName}`,
     numberOfItems: total,
     itemListElement: listings.slice(0, 10).map((l, i) => ({
       "@type": "ListItem",

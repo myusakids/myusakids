@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 import { getAllApprovedListingSlugs, getAllTownSlugs, getCategories } from "@/lib/queries";
 import { getAllPublishedPostSlugs, getBlogCategories } from "@/lib/blog-queries";
-
-const BASE = "https://myconnecticutkids.com";
+import { getStateConfig } from "@/lib/state-context";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { domain } = getStateConfig();
+  const BASE = `https://${domain}`;
   const [listingSlugs, townSlugs, categories, postSlugs, blogCategories] = await Promise.all([
     getAllApprovedListingSlugs().catch(() => [] as string[]),
     getAllTownSlugs().catch(() => [] as string[]),

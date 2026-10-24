@@ -2,14 +2,17 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getEventsByMonth, getEvents } from "@/lib/event-queries";
 import { getTowns } from "@/lib/queries";
+import { getStateConfig } from "@/lib/state-context";
 import EventsPageClient from "./EventsPageClient";
 import { todayISO } from "@/lib/date-utils";
 
-export const metadata: Metadata = {
-  title: "Events Calendar",
-  description:
-    "Find upcoming family events, festivals, classes, and activities for kids across Connecticut.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { name } = getStateConfig();
+  return {
+    title: "Events Calendar",
+    description: `Find upcoming family events, festivals, classes, and activities for kids across ${name}.`,
+  };
+}
 
 export const revalidate = 1800;
 
@@ -42,6 +45,8 @@ export default async function EventsPage({ searchParams }: Props) {
     startDate: today,
   }).catch(() => []);
 
+  const { name: stateName } = getStateConfig();
+
   return (
     <Suspense fallback={null}>
       <EventsPageClient
@@ -53,6 +58,7 @@ export default async function EventsPage({ searchParams }: Props) {
         today={today}
         initialTown={searchParams.town}
         initialCat={searchParams.cat}
+        stateName={stateName}
       />
     </Suspense>
   );

@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
+import { getStateConfig } from "@/lib/state-context";
 import StatusBadge from "@/components/StatusBadge";
 import type { Profile, Listing } from "@/lib/types";
 
@@ -10,6 +11,7 @@ export const metadata: Metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const supabase = createSupabaseServer();
+  const { siteName } = getStateConfig();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/signin");
 
@@ -104,7 +106,7 @@ export default async function DashboardPage() {
             You don&apos;t have a listing yet
           </h2>
           <p className="text-sm text-gray-500 mb-6">
-            Add your business to MyConnecticutKids so families can find you.
+            Add your business to {siteName} so families can find you.
           </p>
           <Link
             href="/submit"
@@ -120,7 +122,7 @@ export default async function DashboardPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">{listing.name}</h2>
-              <p className="text-sm text-gray-500">{listing.town}, CT</p>
+              <p className="text-sm text-gray-500">{listing.town}</p>
             </div>
             <StatusBadge status={listing.status} size="md" />
           </div>

@@ -6,38 +6,42 @@ import { ToastProvider } from "@/components/Toast";
 import ConsentBanner from "@/components/ConsentBanner";
 import AdSlot from "@/components/AdSlot";
 import { getActiveAdMap } from "@/lib/ad-slot-queries";
+import { getStateConfig } from "@/lib/state-context";
 
-export const metadata: Metadata = {
-  title: {
-    template: "%s | MyConnecticutKids",
-    default: "MyConnecticutKids — Find things for kids in CT",
-  },
-  description:
-    "Connecticut's family resource directory — find camps, classes, sports programs, childcare, birthday party venues, and things to do with kids near you.",
-  openGraph: {
-    siteName: "MyConnecticutKids",
-    type: "website",
-    locale: "en_US",
-    images: [
-      {
-        url: "/og-default.png",
-        width: 1200,
-        height: 630,
-        alt: "MyConnecticutKids — Find things for kids in CT",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-  },
-  metadataBase: new URL("https://myconnecticutkids.com"),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName, abbr, name, domain } = getStateConfig();
+  return {
+    title: {
+      template: `%s | ${siteName}`,
+      default: `${siteName} — Find things for kids in ${abbr}`,
+    },
+    description: `${name}'s family resource directory — find camps, classes, sports programs, childcare, birthday party venues, and things to do with kids near you.`,
+    openGraph: {
+      siteName,
+      type: "website",
+      locale: "en_US",
+      images: [
+        {
+          url: "/og-default.png",
+          width: 1200,
+          height: 630,
+          alt: `${siteName} — Find things for kids in ${abbr}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+    },
+    metadataBase: new URL(`https://${domain}`),
+  };
+}
 
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { siteName } = getStateConfig();
   const adMap = await getActiveAdMap();
   const sidebarCode = adMap["sidebar_300x600"] ?? "";
 
@@ -45,7 +49,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className="bg-white text-gray-900 font-sans antialiased">
         <ToastProvider>
-          <Nav />
+          <Nav siteName={siteName} />
           <main>{children}</main>
           {sidebarCode && (
             <aside

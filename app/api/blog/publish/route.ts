@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
+import { getStateConfig } from "@/lib/state-context";
 
 /**
  * POST /api/blog/publish
@@ -55,11 +56,15 @@ export async function POST(req: NextRequest) {
   }
 
   const postStatus = status ?? "published";
+  const state = getStateConfig();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createSupabaseAdmin() as any;
 
-  // Upsert post
+  // Upsert post.
+  // Note: onConflict uses "slug" alone — a (state, slug) composite unique
+  // constraint should be added before launching a second state to avoid
+  // cross-state slug collisions overwriting posts.
   const { data: post, error: postErr } = await admin
     .from("blog_posts")
     .upsert(
@@ -71,8 +76,9 @@ export async function POST(req: NextRequest) {
         meta_title: meta_title ?? null,
         meta_description: meta_description ?? null,
         featured_image: featured_image ?? null,
-        author_name: author_name ?? "MyConnecticutKids Team",
+        author_name: author_name ?? `${state.siteName} Team`,
         status: postStatus,
+        state: state.abbr,
         published_at: postStatus === "published" ? new Date().toISOString() : null,
       },
       { onConflict: "slug" }

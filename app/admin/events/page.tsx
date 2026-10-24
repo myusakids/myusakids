@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { getStateConfig } from "@/lib/state-context";
 import type { Event } from "@/lib/types";
 import EventsAdminClient from "./EventsAdminClient";
 
@@ -12,6 +13,7 @@ interface Props {
 
 export default async function AdminEventsPage({ searchParams }: Props) {
   const supabase = createSupabaseServer();
+  const { abbr } = getStateConfig();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/signin");
 
@@ -19,6 +21,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
   const { data } = await (supabase as any)
     .from("events")
     .select("*, event_categories(categories(name, slug, icon))")
+    .eq("state", abbr)
     .order("created_at", { ascending: false });
 
   const events = (data ?? []) as (Event & {

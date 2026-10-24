@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseAdmin } from "./supabase-admin";
+import { getStateConfig } from "./state-context";
 
 interface SaveBlogPostInput {
   id?: string;
@@ -23,6 +24,7 @@ export async function saveBlogPost(input: SaveBlogPostInput): Promise<{
   error?: string;
 }> {
   try {
+    const { abbr } = getStateConfig();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = createSupabaseAdmin() as any;
 
@@ -45,11 +47,11 @@ export async function saveBlogPost(input: SaveBlogPostInput): Promise<{
     let postId = input.id;
 
     if (input.id) {
-      await admin.from("blog_posts").update(payload).eq("id", input.id);
+      await admin.from("blog_posts").update(payload).eq("id", input.id).eq("state", abbr);
     } else {
       const { data, error } = await admin
         .from("blog_posts")
-        .insert(payload)
+        .insert({ ...payload, state: abbr })
         .select("id")
         .single();
       if (error) return { error: error.message };

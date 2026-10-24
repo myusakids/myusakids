@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { searchListings, getCategories, getTowns, LISTINGS_PER_PAGE } from "@/lib/queries";
+import { getStateConfig } from "@/lib/state-context";
 import ListingCard from "@/components/ListingCard";
 import SearchBar from "@/components/SearchBar";
 import Pagination from "@/components/Pagination";
@@ -10,10 +11,13 @@ interface Props {
   searchParams: { q?: string; town?: string; category?: string; page?: string };
 }
 
-export const metadata: Metadata = {
-  title: "Search listings",
-  description: "Search camps, classes, sports programs, childcare and more for kids in Connecticut.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { name } = getStateConfig();
+  return {
+    title: "Search listings",
+    description: `Search camps, classes, sports programs, childcare and more for kids in ${name}.`,
+  };
+}
 
 export default async function SearchPage({ searchParams }: Props) {
   const { q, town, category } = searchParams;

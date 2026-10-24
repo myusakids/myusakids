@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
+import { getStateConfig } from "@/lib/state-context";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,6 +20,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "invalid event_type" }, { status: 400 });
     }
 
+    const { abbr } = getStateConfig();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = createSupabaseAdmin() as any;
     await admin.from("analytics_events").insert({
@@ -26,6 +28,7 @@ export async function POST(req: NextRequest) {
       listing_id: listing_id ?? null,
       event_id: event_id ?? null,
       session_id: session_id ?? null,
+      state: abbr,
     });
 
     return NextResponse.json({ ok: true });

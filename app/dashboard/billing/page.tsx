@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { getStateConfig } from "@/lib/state-context";
 import type { Listing } from "@/lib/types";
 import PayPalButton from "./PayPalButton";
 
@@ -22,6 +23,8 @@ const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? "";
 
 export default async function BillingPage() {
   const supabase = createSupabaseServer();
+  const { domain } = getStateConfig();
+  const supportEmail = `hello@${domain}`;
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/signin");
 
@@ -109,7 +112,7 @@ export default async function BillingPage() {
                 PayPal checkout coming soon
               </div>
               <p className="text-xs text-gray-400 mt-2 text-center">
-                Email <a href="mailto:hello@myconnecticutkids.com" className="text-brand-green hover:underline">hello@myconnecticutkids.com</a> to upgrade manually.
+                Email <a href={`mailto:${supportEmail}`} className="text-brand-green hover:underline">{supportEmail}</a> to upgrade manually.
               </p>
             </div>
           )}
@@ -118,7 +121,7 @@ export default async function BillingPage() {
 
       <p className="text-xs text-gray-400 mt-6 max-w-sm">
         Subscriptions are managed through PayPal. Cancel any time from your PayPal account.
-        Questions? Email <a href="mailto:hello@myconnecticutkids.com" className="text-brand-green hover:underline">hello@myconnecticutkids.com</a>.
+        Questions? Email <a href={`mailto:${supportEmail}`} className="text-brand-green hover:underline">{supportEmail}</a>.
       </p>
     </div>
   );

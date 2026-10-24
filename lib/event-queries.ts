@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { getStateConfig } from "./state-context";
 import type { EventCard, EventWithDetails, Event, Category, Listing } from "./types";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -37,6 +38,7 @@ export async function getEventsByMonth(
   year: number,
   month: number
 ): Promise<EventCard[]> {
+  const { abbr } = getStateConfig();
   const startOfMonth = `${year}-${String(month).padStart(2, "0")}-01`;
   // Last day: day 0 of next month = last day of this month
   const lastDay = new Date(year, month, 0).getDate();
@@ -46,6 +48,7 @@ export async function getEventsByMonth(
     .from("events")
     .select(EVENT_CARD_SELECT)
     .eq("status", "approved")
+    .eq("state", abbr)
     .gte("start_date", startOfMonth)
     .lte("start_date", endOfMonth)
     .order("start_date")
@@ -63,10 +66,12 @@ export async function getEvents(filters: {
   endDate?: string;
   thisWeek?: boolean;
 } = {}): Promise<EventCard[]> {
+  const { abbr } = getStateConfig();
   let query = supabase
     .from("events")
     .select(EVENT_CARD_SELECT)
-    .eq("status", "approved");
+    .eq("status", "approved")
+    .eq("state", abbr);
 
   if (filters.town) query = query.eq("town", filters.town);
   if (filters.isFree) query = query.eq("is_free", true);
@@ -102,6 +107,7 @@ export async function getEvents(filters: {
 }
 
 export async function getEventBySlug(slug: string): Promise<EventWithDetails | null> {
+  const { abbr } = getStateConfig();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase as any)
     .from("events")
@@ -112,6 +118,7 @@ export async function getEventBySlug(slug: string): Promise<EventWithDetails | n
     `)
     .eq("slug", slug)
     .eq("status", "approved")
+    .eq("state", abbr)
     .single() as { data: Record<string, unknown> | null; error: unknown };
 
   if (error || !data) return null;
@@ -136,12 +143,14 @@ export async function getEventsForListing(
   listingId: string,
   limit = 2
 ): Promise<EventCard[]> {
+  const { abbr } = getStateConfig();
   const today = new Date().toISOString().slice(0, 10);
 
   const { data, error } = await supabase
     .from("events")
     .select(EVENT_CARD_SELECT)
     .eq("status", "approved")
+    .eq("state", abbr)
     .eq("listing_id", listingId)
     .gte("start_date", today)
     .order("start_date")
@@ -152,12 +161,14 @@ export async function getEventsForListing(
 }
 
 export async function getFeaturedEvents(limit = 3): Promise<EventCard[]> {
+  const { abbr } = getStateConfig();
   const today = new Date().toISOString().slice(0, 10);
 
   const { data, error } = await supabase
     .from("events")
     .select(EVENT_CARD_SELECT)
     .eq("status", "approved")
+    .eq("state", abbr)
     .eq("is_featured", true)
     .gte("start_date", today)
     .order("start_date")
@@ -172,12 +183,14 @@ export async function getNearbyEvents(
   excludeSlug: string,
   limit = 3
 ): Promise<EventCard[]> {
+  const { abbr } = getStateConfig();
   const today = new Date().toISOString().slice(0, 10);
 
   const { data, error } = await supabase
     .from("events")
     .select(EVENT_CARD_SELECT)
     .eq("status", "approved")
+    .eq("state", abbr)
     .eq("town", town)
     .gte("start_date", today)
     .neq("slug", excludeSlug)

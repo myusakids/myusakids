@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getPostBySlug, getAllPublishedPostSlugs, getPublishedPosts } from "@/lib/blog-queries";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
+import { getStateConfig } from "@/lib/state-context";
 import AdSlot from "@/components/AdSlot";
 
 interface Props {
@@ -18,8 +19,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPostBySlug(params.slug);
   if (!post) return {};
+  const { siteName } = getStateConfig();
   return {
-    title: post.meta_title ?? `${post.title} | MyConnecticutKids`,
+    title: post.meta_title ?? `${post.title} | ${siteName}`,
     description: post.meta_description ?? post.excerpt ?? "",
     openGraph: {
       title: post.meta_title ?? post.title,
@@ -35,6 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function BlogPostPage({ params }: Props) {
+  const { abbr, siteName } = getStateConfig();
   const [post, related] = await Promise.all([
     getPostBySlug(params.slug),
     getPublishedPosts(4),
@@ -47,7 +50,8 @@ export default async function BlogPostPage({ params }: Props) {
   const { data: adSlots } = await admin
     .from("ad_slots")
     .select("name, code, ad_type")
-    .eq("is_active", true);
+    .eq("is_active", true)
+    .eq("state", abbr);
 
   const adMap: Record<string, string> = {};
   for (const slot of adSlots ?? []) {
@@ -67,7 +71,7 @@ export default async function BlogPostPage({ params }: Props) {
     image: post.featured_image ?? undefined,
     publisher: {
       "@type": "Organization",
-      name: "MyConnecticutKids",
+      name: siteName,
       logo: { "@type": "ImageObject", url: "/icon.png" },
     },
     keywords: post.keywords.join(", "),

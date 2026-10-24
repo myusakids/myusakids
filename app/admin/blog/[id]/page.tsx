@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { getBlogCategories } from "@/lib/blog-queries";
+import { getStateConfig } from "@/lib/state-context";
 import BlogPostForm from "../BlogPostForm";
 
 interface Props {
@@ -13,6 +14,7 @@ export const metadata: Metadata = { title: "Edit Blog Post" };
 export const dynamic = "force-dynamic";
 
 export default async function EditBlogPostPage({ params }: Props) {
+  const { siteName, abbr } = getStateConfig();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createSupabaseAdmin() as any;
 
@@ -25,6 +27,7 @@ export default async function EditBlogPostPage({ params }: Props) {
         blog_post_keywords ( keyword )
       `)
       .eq("id", params.id)
+      .eq("state", abbr)
       .single(),
     getBlogCategories(),
   ]);
@@ -60,6 +63,7 @@ export default async function EditBlogPostPage({ params }: Props) {
 
       <BlogPostForm
         categories={categories}
+        defaultAuthorName={`${siteName} Team`}
         initialData={{
           id: post.id,
           title: post.title,

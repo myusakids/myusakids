@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { getCategories, getTowns } from "@/lib/queries";
+import { getStateConfig } from "@/lib/state-context";
 import EventSubmitForm from "./EventSubmitForm";
 
-export const metadata: Metadata = {
-  title: "Submit an event",
-  description: "Submit a free family event to the MyConnecticutKids events calendar.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName } = getStateConfig();
+  return {
+    title: "Submit an event",
+    description: `Submit a free family event to the ${siteName} events calendar.`,
+  };
+}
 
 export default async function EventSubmitPage() {
   const [categories, towns] = await Promise.all([

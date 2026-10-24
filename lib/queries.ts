@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { getStateConfig } from "./state-context";
 import type { ListingCard, ListingWithDetails, Category, Town, Listing, ListingImage, ListingHours } from "./types";
 
 // ─── Categories ───────────────────────────────────────────────────────────────
@@ -25,9 +26,11 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 // ─── Towns ────────────────────────────────────────────────────────────────────
 
 export async function getTowns(): Promise<Town[]> {
+  const { abbr } = getStateConfig();
   const { data, error } = await supabase
     .from("towns")
     .select("*")
+    .eq("state", abbr)
     .order("name");
   if (error) throw error;
   return data ?? [];
@@ -36,6 +39,7 @@ export async function getTowns(): Promise<Town[]> {
 // ─── Listings — card format ───────────────────────────────────────────────────
 
 export async function getFeaturedListings(limit = 6): Promise<ListingCard[]> {
+  const { abbr } = getStateConfig();
   const { data, error } = await supabase
     .from("listings")
     .select(`
@@ -44,6 +48,7 @@ export async function getFeaturedListings(limit = 6): Promise<ListingCard[]> {
       listing_images ( url, is_primary, sort_order )
     `)
     .eq("status", "approved")
+    .eq("state", abbr)
     .eq("is_featured", true)
     .limit(limit);
 
@@ -64,6 +69,7 @@ export async function getListingsByCategory(
   page = 1,
   perPage = LISTINGS_PER_PAGE
 ): Promise<PagedListings> {
+  const { abbr } = getStateConfig();
   const from = (page - 1) * perPage;
   const to = from + perPage - 1;
 
@@ -78,6 +84,7 @@ export async function getListingsByCategory(
       { count: "exact" }
     )
     .eq("status", "approved")
+    .eq("state", abbr)
     .eq("listing_categories.categories.slug", categorySlug);
 
   if (town) query = query.eq("town", town);
@@ -96,6 +103,7 @@ export async function searchListings(
   page = 1,
   perPage = LISTINGS_PER_PAGE
 ): Promise<PagedListings> {
+  const { abbr } = getStateConfig();
   const from = (page - 1) * perPage;
   const to = from + perPage - 1;
 
@@ -110,7 +118,8 @@ export async function searchListings(
   let query = supabase
     .from("listings")
     .select(selectCols, { count: "exact" })
-    .eq("status", "approved");
+    .eq("status", "approved")
+    .eq("state", abbr);
 
   if (params.q) {
     query = query.or(
@@ -134,6 +143,7 @@ export async function searchListings(
 // ─── Listing — full detail ────────────────────────────────────────────────────
 
 export async function getListingBySlug(slug: string): Promise<ListingWithDetails | null> {
+  const { abbr } = getStateConfig();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase as any)
     .from("listings")
@@ -145,6 +155,7 @@ export async function getListingBySlug(slug: string): Promise<ListingWithDetails
     `)
     .eq("slug", slug)
     .eq("status", "approved")
+    .eq("state", abbr)
     .single() as { data: Record<string, unknown> | null; error: unknown };
 
   if (error || !data) return null;
@@ -179,6 +190,7 @@ export async function getSimilarListings(
   excludeSlug: string,
   limit = 3
 ): Promise<ListingCard[]> {
+  const { abbr } = getStateConfig();
   const { data, error } = await supabase
     .from("listings")
     .select(`
@@ -187,6 +199,7 @@ export async function getSimilarListings(
       listing_images ( url, is_primary, sort_order )
     `)
     .eq("status", "approved")
+    .eq("state", abbr)
     .eq("town", town)
     .eq("listing_categories.categories.slug", categorySlug)
     .neq("slug", excludeSlug)
@@ -201,6 +214,7 @@ export async function getListingsByTown(
   page = 1,
   perPage = LISTINGS_PER_PAGE
 ): Promise<PagedListings> {
+  const { abbr } = getStateConfig();
   const from = (page - 1) * perPage;
   const to = from + perPage - 1;
 
@@ -215,6 +229,7 @@ export async function getListingsByTown(
       { count: "exact" }
     )
     .eq("status", "approved")
+    .eq("state", abbr)
     .eq("town", town)
     .order("is_featured", { ascending: false })
     .order("name")
@@ -225,25 +240,30 @@ export async function getListingsByTown(
 }
 
 export async function getTownBySlug(slug: string): Promise<Town | null> {
+  const { abbr } = getStateConfig();
   const { data, error } = await supabase
     .from("towns")
     .select("*")
     .eq("slug", slug)
+    .eq("state", abbr)
     .single();
   if (error) return null;
   return data;
 }
 
 export async function getAllTownSlugs(): Promise<string[]> {
-  const { data } = await supabase.from("towns").select("slug");
+  const { abbr } = getStateConfig();
+  const { data } = await supabase.from("towns").select("slug").eq("state", abbr);
   return (data ?? []).map((r: { slug: string }) => r.slug);
 }
 
 export async function getAllApprovedListingSlugs(): Promise<string[]> {
+  const { abbr } = getStateConfig();
   const { data } = await supabase
     .from("listings")
     .select("slug")
-    .eq("status", "approved");
+    .eq("status", "approved")
+    .eq("state", abbr);
   return (data ?? []).map((r: { slug: string }) => r.slug);
 }
 

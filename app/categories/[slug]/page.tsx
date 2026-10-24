@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getCategoryBySlug, getListingsByCategory, getTowns, LISTINGS_PER_PAGE } from "@/lib/queries";
 import { getActiveAdMap } from "@/lib/ad-slot-queries";
+import { getStateConfig } from "@/lib/state-context";
 import ListingCard from "@/components/ListingCard";
 import TownPills from "@/components/TownPills";
 import AdSlot from "@/components/AdSlot";
@@ -16,12 +17,13 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const category = await getCategoryBySlug(params.slug);
   if (!category) return {};
+  const { name, siteName } = getStateConfig();
   return {
-    title: `${category.name} in Connecticut`,
-    description: `Find ${category.name.toLowerCase()} for kids in Connecticut. Browse listings by town on MyConnecticutKids.`,
+    title: `${category.name} in ${name}`,
+    description: `Find ${category.name.toLowerCase()} for kids in ${name}. Browse listings by town on ${siteName}.`,
     openGraph: {
-      title: `${category.name} in Connecticut | MyConnecticutKids`,
-      description: `Find ${category.name.toLowerCase()} for kids in Connecticut.`,
+      title: `${category.name} in ${name} | ${siteName}`,
+      description: `Find ${category.name.toLowerCase()} for kids in ${name}.`,
     },
   };
 }
@@ -29,6 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function CategoryPage({ params, searchParams }: Props) {
+  const { name: stateName } = getStateConfig();
   const [category, towns, adMap] = await Promise.all([
     getCategoryBySlug(params.slug),
     getTowns(),
@@ -58,7 +61,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{category.name}</h1>
         </div>
         <p className="text-gray-500 text-sm">
-          {total} listing{total !== 1 ? "s" : ""} in Connecticut
+          {total} listing{total !== 1 ? "s" : ""} in {stateName}
           {selectedTown ? ` · ${selectedTown}` : ""}
           {totalPages > 1 ? ` · Page ${page} of ${totalPages}` : ""}
         </p>

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getEventBySlug, getNearbyEvents } from "@/lib/event-queries";
+import { getStateConfig } from "@/lib/state-context";
 import EventCard from "@/components/EventCard";
 import CostBadge from "@/components/CostBadge";
 import AgeRange from "@/components/AgeRange";
@@ -17,12 +18,13 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const event = await getEventBySlug(params.slug);
   if (!event) return {};
+  const { siteName } = getStateConfig();
   const desc = event.description?.slice(0, 160) ?? "";
   return {
     title: `${event.title} — ${formatEventDate(event.start_date)}`,
     description: desc,
     openGraph: {
-      title: `${event.title} | MyConnecticutKids`,
+      title: `${event.title} | ${siteName}`,
       description: desc,
     },
   };

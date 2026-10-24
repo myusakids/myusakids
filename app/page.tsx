@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCategories, getFeaturedListings, getTowns } from "@/lib/queries";
 import { getFeaturedEvents } from "@/lib/event-queries";
 import { getActiveAdMap } from "@/lib/ad-slot-queries";
+import { getStateConfig } from "@/lib/state-context";
 import CategoryGrid from "@/components/CategoryGrid";
 import ListingCard from "@/components/ListingCard";
 import EventCardCompact from "@/components/EventCardCompact";
@@ -10,15 +11,18 @@ import SearchBar from "@/components/SearchBar";
 import AdSlot from "@/components/AdSlot";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "MyConnecticutKids — Find things for kids in CT",
-  description:
-    "Camps, classes, sports programs, childcare, birthday party venues and things to do with kids in Connecticut.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName, abbr, name } = getStateConfig();
+  return {
+    title: `${siteName} — Find things for kids in ${abbr}`,
+    description: `Camps, classes, sports programs, childcare, birthday party venues and things to do with kids in ${name}.`,
+  };
+}
 
 export const revalidate = 1800;
 
 export default async function HomePage() {
+  const { abbr, name } = getStateConfig();
   const [categories, featuredListings, towns, featuredEvents, adMap] = await Promise.all([
     getCategories().catch(() => []),
     getFeaturedListings(6).catch(() => []),
@@ -35,7 +39,7 @@ export default async function HomePage() {
       <section className="bg-brand-green px-4 py-14 md:py-20">
         <div className="max-w-2xl mx-auto text-center">
           <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">
-            Find things for your kids in CT
+            Find things for your kids in {abbr}
           </h1>
           <p className="mt-3 text-brand-green-light text-base md:text-lg">
             Camps, classes, events, childcare &amp; more near you
@@ -141,7 +145,7 @@ export default async function HomePage() {
       <section className="bg-brand-green-light border-y border-brand-green/20 px-4 py-10">
         <div className="max-w-2xl mx-auto text-center">
           <p className="text-lg font-medium text-brand-green-dark">
-            Are you a Connecticut kids business?
+            Are you a {name} kids business?
           </p>
           <p className="text-brand-green-dark/70 mt-1 text-sm">
             Add your listing — it&apos;s free and takes less than 5 minutes.

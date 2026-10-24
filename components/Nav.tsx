@@ -7,7 +7,11 @@ import { supabaseBrowser } from "@/lib/supabase-browser";
 import UserMenu from "./UserMenu";
 import type { Profile } from "@/lib/types";
 
-export default function Nav() {
+interface Props {
+  siteName: string;
+}
+
+export default function Nav({ siteName }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -53,7 +57,7 @@ export default function Nav() {
         <Link href="/" className="flex items-center">
           <Image
             src="/logo.svg"
-            alt="MyConnecticutKids.com"
+            alt={siteName}
             width={240}
             height={70}
             priority

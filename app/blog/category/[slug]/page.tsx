@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { getPostsByCategory, getBlogCategoryBySlug, getBlogCategories } from "@/lib/blog-queries";
+import { getStateConfig } from "@/lib/state-context";
 
 interface Props {
   params: { slug: string };
@@ -11,9 +12,10 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const cat = await getBlogCategoryBySlug(params.slug);
   if (!cat) return {};
+  const { name, siteName } = getStateConfig();
   return {
-    title: `${cat.name} | MyConnecticutKids Blog`,
-    description: `Read our ${cat.name.toLowerCase()} guides and tips for Connecticut families.`,
+    title: `${cat.name} | ${siteName} Blog`,
+    description: `Read our ${cat.name.toLowerCase()} guides and tips for ${name} families.`,
     alternates: { canonical: `/blog/category/${cat.slug}` },
   };
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { getStateConfig } from "@/lib/state-context";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -15,6 +16,7 @@ const NAV = [
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const supabase = createSupabaseServer();
+  const { siteName } = getStateConfig();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/signin");
 
@@ -33,7 +35,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         <span className="text-2xl">🔧</span>
         <div>
           <h1 className="text-lg font-bold text-gray-900">Admin</h1>
-          <p className="text-xs text-gray-400">MyConnecticutKids — site management</p>
+          <p className="text-xs text-gray-400">{siteName} — site management</p>
         </div>
       </div>
 

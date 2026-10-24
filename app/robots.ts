@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
+import { getStateConfig } from "@/lib/state-context";
 
 export default function robots(): MetadataRoute.Robots {
+  const { domain } = getStateConfig();
+  const origin = `https://${domain}`;
   return {
     rules: [
       {
@@ -15,7 +18,7 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: "https://myconnecticutkids.com/sitemap.xml",
-    host: "https://myconnecticutkids.com",
+    sitemap: `${origin}/sitemap.xml`,
+    host: origin,
   };
 }

@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { getCategories, getTowns } from "@/lib/queries";
+import { getStateConfig } from "@/lib/state-context";
 import SubmitForm from "./SubmitForm";
 
-export const metadata: Metadata = {
-  title: "Add your listing",
-  description: "List your Connecticut kids business for free on MyConnecticutKids.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { name, siteName } = getStateConfig();
+  return {
+    title: "Add your listing",
+    description: `List your ${name} kids business for free on ${siteName}.`,
+  };
+}
 
 export default async function SubmitPage() {
   const [categories, towns] = await Promise.all([

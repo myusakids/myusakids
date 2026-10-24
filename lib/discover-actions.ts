@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseAdmin } from "./supabase-admin";
+import { getStateConfig } from "./state-context";
 
 interface DiscoveredHour {
   day_of_week: number;
@@ -43,6 +44,7 @@ export async function importBusiness(
   categoryId: string
 ): Promise<{ error?: string }> {
   try {
+    const { abbr } = getStateConfig();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = createSupabaseAdmin() as any;
 
@@ -75,6 +77,7 @@ export async function importBusiness(
         status: "approved",
         is_featured: false,
         owner_id: null,
+        state: abbr,
       })
       .select("id")
       .single();

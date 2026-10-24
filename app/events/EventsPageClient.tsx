@@ -30,6 +30,7 @@ interface Props {
   today: string;
   initialTown?: string;
   initialCat?: string;
+  stateName: string;
 }
 
 export default function EventsPageClient({
@@ -41,6 +42,7 @@ export default function EventsPageClient({
   today,
   initialTown,
   initialCat,
+  stateName,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -162,7 +164,7 @@ export default function EventsPageClient({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Events calendar</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Family events across Connecticut</p>
+          <p className="text-sm text-gray-500 mt-0.5">Family events across {stateName}</p>
         </div>
 
         {/* View toggle */}

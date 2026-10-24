@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { getStateConfig } from "./state-context";
 
 export interface BlogPost {
   id: string;
@@ -38,6 +39,7 @@ function normalizePost(row: any): BlogPost {
 }
 
 export async function getPublishedPosts(limit = 20): Promise<BlogPost[]> {
+  const { abbr } = getStateConfig();
   const { data, error } = await supabase
     .from("blog_posts")
     .select(`
@@ -45,6 +47,7 @@ export async function getPublishedPosts(limit = 20): Promise<BlogPost[]> {
       blog_post_categories ( blog_categories ( id, name, slug ) )
     `)
     .eq("status", "published")
+    .eq("state", abbr)
     .order("published_at", { ascending: false })
     .limit(limit);
 
@@ -54,6 +57,7 @@ export async function getPublishedPosts(limit = 20): Promise<BlogPost[]> {
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+  const { abbr } = getStateConfig();
   const { data, error } = await supabase
     .from("blog_posts")
     .select(`
@@ -63,6 +67,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     `)
     .eq("slug", slug)
     .eq("status", "published")
+    .eq("state", abbr)
     .single();
 
   if (error || !data) return null;
@@ -71,6 +76,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
 }
 
 export async function getPostsByCategory(categorySlug: string, limit = 20): Promise<BlogPost[]> {
+  const { abbr } = getStateConfig();
   const { data, error } = await supabase
     .from("blog_posts")
     .select(`
@@ -78,6 +84,7 @@ export async function getPostsByCategory(categorySlug: string, limit = 20): Prom
       blog_post_categories!inner ( blog_categories!inner ( id, name, slug ) )
     `)
     .eq("status", "published")
+    .eq("state", abbr)
     .eq("blog_post_categories.blog_categories.slug", categorySlug)
     .order("published_at", { ascending: false })
     .limit(limit);
@@ -107,9 +114,11 @@ export async function getBlogCategoryBySlug(slug: string): Promise<BlogCategory 
 }
 
 export async function getAllPublishedPostSlugs(): Promise<string[]> {
+  const { abbr } = getStateConfig();
   const { data } = await supabase
     .from("blog_posts")
     .select("slug")
-    .eq("status", "published");
+    .eq("status", "published")
+    .eq("state", abbr);
   return (data ?? []).map((r: { slug: string }) => r.slug);
 }
