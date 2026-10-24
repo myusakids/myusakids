@@ -1,9 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { resolveStateFromHost, STATE_HEADER } from "@/lib/state-config";
 
 export async function middleware(request: NextRequest) {
-  // Build a response we can attach refreshed cookies to
-  let supabaseResponse = NextResponse.next({ request });
+  // Resolve tenant state from host; downstream server code reads it via headers()
+  const state = resolveStateFromHost(request.headers.get("host"));
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(STATE_HEADER, state.slug);
+
+  let supabaseResponse = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,7 +24,9 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          supabaseResponse = NextResponse.next({ request });
+          supabaseResponse = NextResponse.next({
+            request: { headers: requestHeaders },
+          });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
