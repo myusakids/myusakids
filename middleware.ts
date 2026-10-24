@@ -75,3 +75,8 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
+
+// Pin to Edge runtime — Vercel started defaulting new projects to Node.js
+// middleware, and the Node.js build output has an ESM/CJS mismatch that fails
+// with "Cannot use import statement outside a module".
+export const runtime = "edge";
