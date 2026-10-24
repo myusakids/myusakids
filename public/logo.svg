@@ -1,0 +1,54 @@
+<svg width="100%" viewBox="0 0 680 200" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>MyConnecticutKids.com</title>
+  <desc>Stacked logo with four clean figure icons above a bold wordmark</desc>
+
+  <!-- Centered layout -->
+  <g transform="translate(340,0)">
+
+    <!-- Figure 1: Blue -->
+    <g transform="translate(-114, 18)" fill="#185FA5">
+      <circle cx="24" cy="12" r="10"/>
+      <path d="M10 26 Q24 22 38 26 L36 62 Q24 58 12 62 Z"/>
+      <path d="M10 26 Q2 20 0 30 Q-1 40 10 42 L12 62 Z"/>
+      <path d="M38 26 Q46 20 48 30 Q49 40 38 42 L36 62 Z"/>
+    </g>
+
+    <!-- Figure 2: Amber -->
+    <g transform="translate(-42, 18)" fill="#BA7517">
+      <circle cx="24" cy="12" r="10"/>
+      <path d="M10 26 Q24 22 38 26 L36 62 Q24 58 12 62 Z"/>
+      <path d="M10 26 Q2 20 0 30 Q-1 40 10 42 L12 62 Z"/>
+      <path d="M38 26 Q46 20 48 30 Q49 40 38 42 L36 62 Z"/>
+    </g>
+
+    <!-- Figure 3: Red -->
+    <g transform="translate(30, 18)" fill="#A32D2D">
+      <circle cx="24" cy="12" r="10"/>
+      <path d="M10 26 Q24 22 38 26 L36 62 Q24 58 12 62 Z"/>
+      <path d="M10 26 Q2 20 0 30 Q-1 40 10 42 L12 62 Z"/>
+      <path d="M38 26 Q46 20 48 30 Q49 40 38 42 L36 62 Z"/>
+    </g>
+
+    <!-- Figure 4: Green -->
+    <g transform="translate(102, 18)" fill="#3B6D11">
+      <circle cx="24" cy="12" r="10"/>
+      <path d="M10 26 Q24 22 38 26 L36 62 Q24 58 12 62 Z"/>
+      <path d="M10 26 Q2 20 0 30 Q-1 40 10 42 L12 62 Z"/>
+      <path d="M38 26 Q46 20 48 30 Q49 40 38 42 L36 62 Z"/>
+    </g>
+
+    <!-- Wordmark -->
+    <text text-anchor="middle" x="0" y="114" font-family="'Helvetica Neue', Arial, sans-serif" font-size="38" font-weight="800" letter-spacing="-1" fill="#1a1a2e">
+      MyConnecticutKids<tspan fill="#185FA5">.com</tspan>
+    </text>
+
+    <!-- Tagline -->
+    <text text-anchor="middle" x="0" y="145" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" letter-spacing="2" fill="#888780">
+      THE ONLINE SOURCE FOR FAMILY FUN
+    </text>
+
+    <!-- Underline accent -->
+    <rect x="-120" y="155" width="240" height="3" rx="2" fill="#185FA5" opacity="0.5"/>
+
+  </g>
+</svg>

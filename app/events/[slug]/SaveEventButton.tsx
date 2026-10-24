@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { trackEvent } from "@/lib/analytics";
 
 interface Props {
   slug: string;
   title: string;
+  eventId: string;
 }
 
-export default function SaveEventButton({ slug, title }: Props) {
+export default function SaveEventButton({ slug, title, eventId }: Props) {
   const key = `saved_event_${slug}`;
   const [saved, setSaved] = useState(false);
 
@@ -22,6 +24,7 @@ export default function SaveEventButton({ slug, title }: Props) {
     } else {
       localStorage.setItem(key, "1");
       setSaved(true);
+      trackEvent("event_save", { eventId });
     }
   }
 

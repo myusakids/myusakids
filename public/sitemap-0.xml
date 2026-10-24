@@ -1,5 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://myconnecticutkids.com/events/submit</loc><lastmod>2026-04-10T01:40:02.206Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://myconnecticutkids.com</loc><lastmod>2026-04-10T01:40:02.206Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/robots.txt</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/sitemap.xml</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/auth/signin</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/events/submit</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/blog</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/andover</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/avon</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/bloomfield</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/bolton</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/columbia</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/coventry</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/enfield</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/farmington</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/glastonbury</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/hartford</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/hebron</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/manchester</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/mansfield</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/marlborough</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/newington</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/simsbury</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/somers</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/south-windsor</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/storrs</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/tolland</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/vernon</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/west-hartford</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://myconnecticutkids.com/towns/windsor</loc><lastmod>2026-04-19T23:35:07.018Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>

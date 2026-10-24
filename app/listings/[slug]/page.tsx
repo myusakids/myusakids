@@ -8,6 +8,8 @@ import OpenClosedBadge from "@/components/OpenClosedBadge";
 import ListingCard from "@/components/ListingCard";
 import EventCardCompact from "@/components/EventCardCompact";
 import SaveButton from "./SaveButton";
+import ListingTracker from "./ListingTracker";
+import ListingActionButtons from "./ListingActionButtons";
 
 interface Props {
   params: { slug: string };
@@ -44,6 +46,8 @@ export default async function ListingPage({ params }: Props) {
     getEventsForListing(listing.id, 2).catch(() => []),
   ]);
 
+  const { facebook, instagram, clean: cleanDescription } = extractSocials(listing.description);
+
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     listing.address ?? `${listing.name} ${listing.town} CT`
   )}`;
@@ -69,6 +73,8 @@ export default async function ListingPage({ params }: Props) {
 
   return (
     <>
+      <ListingTracker listingId={listing.id} />
+
       {/* JSON-LD */}
       <script
         type="application/ld+json"
@@ -122,40 +128,21 @@ export default async function ListingPage({ params }: Props) {
 
         {/* ── Action buttons ────────────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-2 mb-6">
-          {listing.website && (
-            <a
-              href={listing.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 bg-brand-green text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-brand-green-mid transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              Visit website
-            </a>
-          )}
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-xl hover:border-brand-green hover:text-brand-green transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-            </svg>
-            Get directions
-          </a>
-          <SaveButton slug={listing.slug} name={listing.name} />
+          <ListingActionButtons
+            listingId={listing.id}
+            website={listing.website}
+            mapsUrl={mapsUrl}
+          />
+          <SaveButton slug={listing.slug} name={listing.name} listingId={listing.id} />
         </div>
 
         <div className="border-t border-gray-100 mb-6" />
 
         {/* ── About ────────────────────────────────────────────────────────── */}
-        {listing.description && (
+        {cleanDescription && (
           <section className="mb-6">
             <h2 className="text-base font-medium text-gray-900 mb-2">About</h2>
-            <ExpandableText text={listing.description} />
+            <ExpandableText text={cleanDescription} />
           </section>
         )}
 
@@ -214,6 +201,40 @@ export default async function ListingPage({ params }: Props) {
               >
                 {listing.website.replace(/^https?:\/\//, "")}
               </a>
+            </div>
+          )}
+
+          {/* Social links */}
+          {(facebook || instagram) && (
+            <div className="flex items-center gap-3">
+              {facebook && (
+                <a
+                  href={facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook"
+                  className="flex items-center gap-1.5 text-sm text-[#1877F2] hover:opacity-80 transition-opacity"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073C24 5.404 18.627 0 12 0S0 5.404 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
+                  </svg>
+                  Facebook
+                </a>
+              )}
+              {instagram && (
+                <a
+                  href={instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  className="flex items-center gap-1.5 text-sm text-[#E1306C] hover:opacity-80 transition-opacity"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                  </svg>
+                  Instagram
+                </a>
+              )}
             </div>
           )}
 
@@ -298,18 +319,20 @@ export default async function ListingPage({ params }: Props) {
         )}
 
         {/* ── Claim bar ────────────────────────────────────────────────────── */}
-        <div className="border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-8">
-          <div>
-            <p className="text-sm font-medium text-gray-900">Is this your business?</p>
-            <p className="text-xs text-gray-500">Claim this listing to update your info for free.</p>
+        {!listing.owner_id && (
+          <div className="border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-8">
+            <div>
+              <p className="text-sm font-medium text-gray-900">Is this your business?</p>
+              <p className="text-xs text-gray-500">Claim this listing to update your info for free.</p>
+            </div>
+            <Link
+              href={`/auth/signin?claim=${listing.id}&next=/dashboard`}
+              className="shrink-0 text-sm font-medium text-brand-green border border-brand-green px-4 py-2 rounded-lg hover:bg-brand-green hover:text-white transition-colors"
+            >
+              Claim listing →
+            </Link>
           </div>
-          <Link
-            href="/coming-soon"
-            className="shrink-0 text-sm font-medium text-brand-green border border-brand-green px-4 py-2 rounded-lg hover:bg-brand-green hover:text-white transition-colors"
-          >
-            Claim listing →
-          </Link>
-        </div>
+        )}
 
         {/* ── Similar listings ─────────────────────────────────────────────── */}
         {similarListings.length > 0 && (
@@ -330,6 +353,26 @@ export default async function ListingPage({ params }: Props) {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+function extractSocials(description: string | null): { facebook: string | null; instagram: string | null; clean: string } {
+  if (!description) return { facebook: null, instagram: null, clean: "" };
+
+  let facebook: string | null = null;
+  let instagram: string | null = null;
+
+  const fbMatch = description.match(/Facebook:\s*(https?:\/\/\S+)/i);
+  const igMatch = description.match(/Instagram:\s*(https?:\/\/\S+)/i);
+  if (fbMatch) facebook = fbMatch[1].replace(/\s·.*$/, "").trim();
+  if (igMatch) instagram = igMatch[1].replace(/\s·.*$/, "").trim();
+
+  // Remove the social footer line from display
+  const socialIdx = description.indexOf("\n\nFacebook:");
+  const igIdx = description.indexOf("\n\nInstagram:");
+  const cutIdx = socialIdx !== -1 ? socialIdx : igIdx !== -1 ? igIdx : -1;
+  const clean = cutIdx !== -1 ? description.slice(0, cutIdx).trim() : description.trim();
+
+  return { facebook, instagram, clean };
+}
 
 function fmt(t: string): string {
   const [h, m] = t.split(":").map(Number);

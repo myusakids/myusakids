@@ -2,10 +2,12 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { getCategories, getFeaturedListings, getTowns } from "@/lib/queries";
 import { getFeaturedEvents } from "@/lib/event-queries";
+import { getActiveAdMap } from "@/lib/ad-slot-queries";
 import CategoryGrid from "@/components/CategoryGrid";
 import ListingCard from "@/components/ListingCard";
 import EventCardCompact from "@/components/EventCardCompact";
 import SearchBar from "@/components/SearchBar";
+import AdSlot from "@/components/AdSlot";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -17,11 +19,12 @@ export const metadata: Metadata = {
 export const revalidate = 1800;
 
 export default async function HomePage() {
-  const [categories, featuredListings, towns, featuredEvents] = await Promise.all([
+  const [categories, featuredListings, towns, featuredEvents, adMap] = await Promise.all([
     getCategories().catch(() => []),
     getFeaturedListings(6).catch(() => []),
     getTowns().catch(() => []),
     getFeaturedEvents(3).catch(() => []),
+    getActiveAdMap(),
   ]);
 
   const heroTowns = towns.slice(0, 6);
@@ -58,6 +61,16 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ── Ad: Below hero ─────────────────────────────────────────────── */}
+      {adMap["home_top"] && (
+        <section className="max-w-6xl mx-auto px-4 pt-8">
+          <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1 text-center">
+            Advertisement
+          </p>
+          <AdSlot code={adMap["home_top"]} className="flex justify-center" minHeight={90} />
+        </section>
+      )}
+
       {/* ── Category grid ─────────────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="text-xl font-medium text-gray-900 mb-5">Browse by category</h2>
@@ -65,6 +78,16 @@ export default async function HomePage() {
           <CategoryGrid categories={categories} />
         </Suspense>
       </section>
+
+      {/* ── Ad: Between sections ──────────────────────────────────────── */}
+      {adMap["home_middle"] && (
+        <section className="max-w-6xl mx-auto px-4 pb-6">
+          <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1 text-center">
+            Advertisement
+          </p>
+          <AdSlot code={adMap["home_middle"]} className="flex justify-center" minHeight={250} />
+        </section>
+      )}
 
       {/* ── Featured listings ─────────────────────────────────────────────── */}
       {featuredListings.length > 0 && (

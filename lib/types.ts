@@ -1,3 +1,15 @@
+// ─── Auth types ───────────────────────────────────────────────────────────────
+
+export type UserRole = "owner" | "admin";
+
+export interface Profile {
+  id: string;
+  email: string;
+  full_name: string | null;
+  role: UserRole;
+  created_at: string;
+}
+
 // ─── Base table types ────────────────────────────────────────────────────────
 
 export type ListingStatus = "pending" | "approved" | "rejected";
@@ -19,6 +31,7 @@ export interface Listing {
   is_free: boolean;
   status: ListingStatus;
   is_featured: boolean;
+  owner_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -84,6 +97,7 @@ export interface Event {
   recurrence_rule: string | null;
   status: string;
   is_featured: boolean;
+  owner_id: string | null;
   created_at: string;
 }
 

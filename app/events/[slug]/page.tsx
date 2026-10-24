@@ -7,6 +7,7 @@ import CostBadge from "@/components/CostBadge";
 import AgeRange from "@/components/AgeRange";
 import SaveEventButton from "./SaveEventButton";
 import ShareButton from "./ShareButton";
+import EventTracker from "./EventTracker";
 import { formatEventDate, formatTimeRange } from "@/lib/date-utils";
 
 interface Props {
@@ -78,6 +79,7 @@ export default async function EventDetailPage({ params }: Props) {
 
   return (
     <>
+      <EventTracker eventId={event.id} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -133,7 +135,7 @@ export default async function EventDetailPage({ params }: Props) {
             </svg>
             Get directions
           </a>
-          <SaveEventButton slug={event.slug} title={event.title} />
+          <SaveEventButton slug={event.slug} title={event.title} eventId={event.id} />
           <ShareButton title={event.title} />
         </div>
 

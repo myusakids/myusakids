@@ -1,13 +1,16 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { getCategoryBySlug, getListingsByCategory, getTowns } from "@/lib/queries";
+import { getCategoryBySlug, getListingsByCategory, getTowns, LISTINGS_PER_PAGE } from "@/lib/queries";
+import { getActiveAdMap } from "@/lib/ad-slot-queries";
 import ListingCard from "@/components/ListingCard";
 import TownPills from "@/components/TownPills";
+import AdSlot from "@/components/AdSlot";
+import Pagination from "@/components/Pagination";
 
 interface Props {
   params: { slug: string };
-  searchParams: { town?: string };
+  searchParams: { town?: string; page?: string };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -26,15 +29,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function CategoryPage({ params, searchParams }: Props) {
-  const [category, towns] = await Promise.all([
+  const [category, towns, adMap] = await Promise.all([
     getCategoryBySlug(params.slug),
     getTowns(),
+    getActiveAdMap(),
   ]);
 
   if (!category) notFound();
 
   const selectedTown = searchParams.town;
-  const listings = await getListingsByCategory(params.slug, selectedTown).catch(() => []);
+  const page = Math.max(1, parseInt(searchParams.page ?? "1", 10) || 1);
+
+  const { items: listings, total } = await getListingsByCategory(
+    params.slug,
+    selectedTown,
+    page
+  ).catch(() => ({ items: [], total: 0 }));
+
+  const totalPages = Math.max(1, Math.ceil(total / LISTINGS_PER_PAGE));
+  const midIndex = Math.min(6, listings.length);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -45,8 +58,9 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{category.name}</h1>
         </div>
         <p className="text-gray-500 text-sm">
-          {listings.length} listing{listings.length !== 1 ? "s" : ""} in Connecticut
+          {total} listing{total !== 1 ? "s" : ""} in Connecticut
           {selectedTown ? ` · ${selectedTown}` : ""}
+          {totalPages > 1 ? ` · Page ${page} of ${totalPages}` : ""}
         </p>
       </div>
 
@@ -57,13 +71,47 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         </Suspense>
       </div>
 
+      {/* Ad: above grid */}
+      {adMap["category_top"] && (
+        <div className="mb-6">
+          <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1 text-center">
+            Advertisement
+          </p>
+          <AdSlot code={adMap["category_top"]} className="flex justify-center" minHeight={90} />
+        </div>
+      )}
+
       {/* Listings grid */}
       {listings.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {listings.slice(0, midIndex).map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+          {adMap["category_mid"] && listings.length > midIndex && (
+            <div className="my-6">
+              <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1 text-center">
+                Advertisement
+              </p>
+              <AdSlot code={adMap["category_mid"]} className="flex justify-center" minHeight={250} />
+            </div>
+          )}
+          {listings.length > midIndex && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+              {listings.slice(midIndex).map((listing) => (
+                <ListingCard key={listing.id} listing={listing} />
+              ))}
+            </div>
+          )}
+
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            basePath={`/categories/${params.slug}`}
+            searchParams={{ town: selectedTown }}
+          />
+        </>
       ) : (
         <EmptyState category={category.name} town={selectedTown} />
       )}

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getEventsByMonth, getEvents } from "@/lib/event-queries";
 import { getTowns } from "@/lib/queries";
@@ -42,15 +43,17 @@ export default async function EventsPage({ searchParams }: Props) {
   }).catch(() => []);
 
   return (
-    <EventsPageClient
-      initialYear={year}
-      initialMonth={month}
-      monthEvents={monthEvents}
-      upcomingEvents={upcomingEvents}
-      towns={towns}
-      today={today}
-      initialTown={searchParams.town}
-      initialCat={searchParams.cat}
-    />
+    <Suspense fallback={null}>
+      <EventsPageClient
+        initialYear={year}
+        initialMonth={month}
+        monthEvents={monthEvents}
+        upcomingEvents={upcomingEvents}
+        towns={towns}
+        today={today}
+        initialTown={searchParams.town}
+        initialCat={searchParams.cat}
+      />
+    </Suspense>
   );
 }

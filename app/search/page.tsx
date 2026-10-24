@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { searchListings, getCategories, getTowns } from "@/lib/queries";
+import { searchListings, getCategories, getTowns, LISTINGS_PER_PAGE } from "@/lib/queries";
 import ListingCard from "@/components/ListingCard";
 import SearchBar from "@/components/SearchBar";
+import Pagination from "@/components/Pagination";
 import SearchFilters from "./SearchFilters";
 
 interface Props {
-  searchParams: { q?: string; town?: string; category?: string };
+  searchParams: { q?: string; town?: string; category?: string; page?: string };
 }
 
 export const metadata: Metadata = {
@@ -16,14 +17,16 @@ export const metadata: Metadata = {
 
 export default async function SearchPage({ searchParams }: Props) {
   const { q, town, category } = searchParams;
+  const page = Math.max(1, parseInt(searchParams.page ?? "1", 10) || 1);
 
-  const [results, categories, towns] = await Promise.all([
-    searchListings({ q, town, category }).catch(() => []),
+  const [{ items: results, total }, categories, towns] = await Promise.all([
+    searchListings({ q, town, category }, page).catch(() => ({ items: [], total: 0 })),
     getCategories().catch(() => []),
     getTowns().catch(() => []),
   ]);
 
   const hasQuery = q || town || category;
+  const totalPages = Math.max(1, Math.ceil(total / LISTINGS_PER_PAGE));
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -52,23 +55,35 @@ export default async function SearchPage({ searchParams }: Props) {
             <p className="text-sm text-gray-500">
               {hasQuery ? (
                 <>
-                  <span className="font-medium text-gray-900">{results.length}</span> result
-                  {results.length !== 1 ? "s" : ""}
+                  <span className="font-medium text-gray-900">{total}</span> result
+                  {total !== 1 ? "s" : ""}
                   {q ? ` for "${q}"` : ""}
                   {town ? ` in ${town}` : ""}
+                  {totalPages > 1 ? ` · Page ${page} of ${totalPages}` : ""}
                 </>
               ) : (
-                "Browse all listings"
+                <>
+                  Browse all listings
+                  {totalPages > 1 ? ` · Page ${page} of ${totalPages}` : ""}
+                </>
               )}
             </p>
           </div>
 
           {results.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {results.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {results.map((listing) => (
+                  <ListingCard key={listing.id} listing={listing} />
+                ))}
+              </div>
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                basePath="/search"
+                searchParams={{ q, town, category }}
+              />
+            </>
           ) : (
             <EmptyState q={q} town={town} />
           )}

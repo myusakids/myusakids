@@ -51,39 +51,65 @@ export async function getFeaturedListings(limit = 6): Promise<ListingCard[]> {
   return normalizeListingCards(data ?? []);
 }
 
+export interface PagedListings {
+  items: ListingCard[];
+  total: number;
+}
+
+export const LISTINGS_PER_PAGE = 24;
+
 export async function getListingsByCategory(
   categorySlug: string,
-  town?: string
-): Promise<ListingCard[]> {
+  town?: string,
+  page = 1,
+  perPage = LISTINGS_PER_PAGE
+): Promise<PagedListings> {
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
+
   let query = supabase
     .from("listings")
-    .select(`
+    .select(
+      `
       id, name, slug, town, short_desc, is_free, cost_description,
       listing_categories!inner ( categories!inner ( name, slug, icon ) ),
       listing_images ( url, is_primary, sort_order )
-    `)
+    `,
+      { count: "exact" }
+    )
     .eq("status", "approved")
     .eq("listing_categories.categories.slug", categorySlug);
 
   if (town) query = query.eq("town", town);
 
-  const { data, error } = await query;
+  const { data, error, count } = await query
+    .order("is_featured", { ascending: false })
+    .order("name")
+    .range(from, to);
+
   if (error) throw error;
-  return normalizeListingCards(data ?? []);
+  return { items: normalizeListingCards(data ?? []), total: count ?? 0 };
 }
 
-export async function searchListings(params: {
-  q?: string;
-  town?: string;
-  category?: string;
-}): Promise<ListingCard[]> {
+export async function searchListings(
+  params: { q?: string; town?: string; category?: string },
+  page = 1,
+  perPage = LISTINGS_PER_PAGE
+): Promise<PagedListings> {
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
+
+  const selectCols = `
+    id, name, slug, town, short_desc, is_free, cost_description,
+    ${params.category
+      ? "listing_categories!inner ( categories!inner ( name, slug, icon ) )"
+      : "listing_categories ( categories ( name, slug, icon ) )"},
+    listing_images ( url, is_primary, sort_order )
+  `;
+
   let query = supabase
     .from("listings")
-    .select(`
-      id, name, slug, town, short_desc, is_free, cost_description,
-      listing_categories ( categories ( name, slug, icon ) ),
-      listing_images ( url, is_primary, sort_order )
-    `)
+    .select(selectCols, { count: "exact" })
     .eq("status", "approved");
 
   if (params.q) {
@@ -92,20 +118,17 @@ export async function searchListings(params: {
     );
   }
   if (params.town) query = query.eq("town", params.town);
-
-  const { data, error } = await query.limit(50);
-  if (error) throw error;
-
-  let results = normalizeListingCards(data ?? []);
-
-  // Client-side category filter (Supabase nested filter limitation)
   if (params.category) {
-    results = results.filter((l) =>
-      l.categories.some((c) => c.slug === params.category)
-    );
+    query = query.eq("listing_categories.categories.slug", params.category);
   }
 
-  return results;
+  const { data, error, count } = await query
+    .order("is_featured", { ascending: false })
+    .order("name")
+    .range(from, to);
+
+  if (error) throw error;
+  return { items: normalizeListingCards(data ?? []), total: count ?? 0 };
 }
 
 // ─── Listing — full detail ────────────────────────────────────────────────────
@@ -171,6 +194,49 @@ export async function getSimilarListings(
 
   if (error) return [];
   return normalizeListingCards(data ?? []);
+}
+
+export async function getListingsByTown(
+  town: string,
+  page = 1,
+  perPage = LISTINGS_PER_PAGE
+): Promise<PagedListings> {
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
+
+  const { data, error, count } = await supabase
+    .from("listings")
+    .select(
+      `
+      id, name, slug, town, short_desc, is_free, cost_description,
+      listing_categories ( categories ( name, slug, icon ) ),
+      listing_images ( url, is_primary, sort_order )
+    `,
+      { count: "exact" }
+    )
+    .eq("status", "approved")
+    .eq("town", town)
+    .order("is_featured", { ascending: false })
+    .order("name")
+    .range(from, to);
+
+  if (error) return { items: [], total: 0 };
+  return { items: normalizeListingCards(data ?? []), total: count ?? 0 };
+}
+
+export async function getTownBySlug(slug: string): Promise<Town | null> {
+  const { data, error } = await supabase
+    .from("towns")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+  if (error) return null;
+  return data;
+}
+
+export async function getAllTownSlugs(): Promise<string[]> {
+  const { data } = await supabase.from("towns").select("slug");
+  return (data ?? []).map((r: { slug: string }) => r.slug);
 }
 
 export async function getAllApprovedListingSlugs(): Promise<string[]> {
